@@ -1,0 +1,11 @@
+.env
+credentials.json
+
+*~
+*.swp
+*.swo
+*.pyc
+__pycache__/
+bitbake-cookerdaemon.log
+.DS_Store
+Thumbs.db

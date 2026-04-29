@@ -1,0 +1,19 @@
+[Unit]
+Description=Lancement automatique de PyroEngine avec rafraîchissement du Token
+# On attend que Docker et le réseau soient opérationnels
+After=docker.service network-online.target
+Wants=docker.service network-online.target
+
+[Service]
+Type=oneshot
+# On se place dans le dossier de l'application
+WorkingDirectory=/home/root/pyro-engine
+# 1. On lance le script de rafraîchissement du token
+ExecStartPre=/home/root/pyro-engine/refresh_token.sh
+# 2. On lance les conteneurs Docker
+ExecStart=/usr/bin/docker compose up -d
+# On considère le service comme actif tant que les conteneurs tournent
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
