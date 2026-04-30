@@ -1,17 +1,14 @@
 [Unit]
 Description=Lancement automatique de PyroEngine avec rafraîchissement du Token
-# On ajoute docker.socket pour être sûr que l'API Docker répond
 After=docker.service expand-rootfs.service
 Wants=docker.service
 
 [Service]
 Type=oneshot
-# --- ON FORCE L'UTILISATEUR DEV ---
 User=dev
 Group=docker
 WorkingDirectory=/home/dev/pyro-engine
 
-# On attend 5 secondes pour être sûr que le moteur Docker est "chaud"
 ExecStartPre=/bin/sleep 5
 ExecStartPre=/home/dev/pyro-engine/refresh_token.sh
 
