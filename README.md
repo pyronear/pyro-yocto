@@ -61,7 +61,7 @@ git clone -b scarthgap https://git.yoctoproject.org/meta-virtualization
 * Clone git repository
 
 ```
-git clone -b https://github.com/yolec-sml/pyro-yocto-engine.git
+git clone https://github.com/yolec-sml/pyro-yocto-engine.git
 ```
 * Rename the “pyro-yocto-engine” folder to “meta-pyronear”
 
@@ -76,7 +76,7 @@ This will automatically place it in the build folder
 
 ### Conf folder
 
-* We are going to edit the file bblayers.conf --> **build/conf/bblayers.conf**
+* We are going to edit the file bblayers.conf :
 ```
 bitbake-layers add-layer ../meta-raspberrypi
 bitbake-layers add-layer ../meta-openembedded/meta-oe
@@ -182,7 +182,17 @@ To configure other types of camera, please refer to the pyro-engine Readme ([htt
 ```
 cp .env.example .env
 ```
+* Edit your .env file :
+```
+# Pyronear API
+API_URL=http://Ip_PC:5050
+```
+
 ### Edit user and password (optional)
+
+**Default User** : dev
+
+**Default Password** : salut
 
 * If you haven't installed whois, run this command :
 ```
@@ -194,15 +204,15 @@ printf "%q" $(mkpasswd -m sha256crypt new_password)
 ```
 * Edit the file "core-image-minimal.bbappend", which is located here --> **poky/meta-pyronear/recipes-core/images**
 ```
-# Votre mot de passe chiffré
+# Encrypted password
 PASSWD = "new_password"
 
-# Création de l'utilisateur
+# User creation
 EXTRA_USERS_PARAMS = "useradd -p '${PASSWD}' -d /home/new_user -m -s /bin/sh -G docker new_user;"
 ```
 Replace "new_password" with your new encrypted password and "new_user" with the new username.
 
-* Finally, edit the "pyro-setup.bb" file by replacing all instances of "/home/dev" with "/home/new_user". You can find this file here --> **poky/meta-pyronear/recipes-apps/pyro-setup**
+* Finally, edit the "pyro-setup.bb" and "pyro-engine.service" files by replacing all instances of "/home/dev" with "/home/new_user". You can find this file here --> **poky/meta-pyronear/recipes-apps/pyro-setup** // **poky/meta-pyronear/recipes-apps/pyro-setup/files**
 
 ## 💻 Build
 
@@ -230,7 +240,7 @@ bitbake core-image-minimal
 lsblk
 ```
 * Unmount the Bootfs and Rootfs partitions on the microSD card.
-* Go to the folder --> /poky/build/tmp/deploy/images/raspberrypi5
+* Go to the folder --> **/poky/build/tmp/deploy/images/raspberrypi5**
 * Run the following command and replace "location_microSD" with your own location :
 ```
 sudo bmaptool copy core-image-minimal-raspberrypi5.rootfs.wic.bz2 /dev/location_microSD
@@ -256,7 +266,7 @@ Run "ls /dev/ttyUSB*" or "ls /dev/ttyACM*" before and after plugging in your ada
 * Once you've logged in, log in as ‘dev’
 * Run the following command to retrieve the IP address:
 ```
-if config
+ifconfig
 ```
 
 * Finally, switch off the Pi 5, exit the UART connection interface and disconnect your UART connection tool.
@@ -285,3 +295,16 @@ If you want to disable the fire detection system, run this command :
 ```
 docker compose down
 ```
+### ⚠️ Warning
+
+The method for launching the Pyronear AI described above must be used the first time you launch Docker after flashing the microSD card.
+
+In fact, the next time you restart the Raspberry Pi 5 (without flashing the microSD card), it will refresh its token and launch Docker automatically.
+
+Run this command to check that everything is working properly :
+```
+cd /home/dev/pyro-engine/
+docker logs -f engine
+```
+If you see that nothing has started, you can restart the AI manually by following the instructions above.
+
