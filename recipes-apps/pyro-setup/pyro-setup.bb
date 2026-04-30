@@ -48,6 +48,10 @@ do_install() {
     install -m 0644 ${WORKDIR}/pyro-engine.service ${D}${systemd_system_unitdir}/
 }
 
+pkg_postinst_ontarget:${PN}() {
+    chown -R dev:dev /home/dev/pyro-engine
+}
+
 # Déclaration de tous les fichiers appartenant au paquet
 FILES:${PN} += " \
     /home/dev \
@@ -55,6 +59,3 @@ FILES:${PN} += " \
     ${systemd_system_unitdir}/expand-rootfs.service \
     ${systemd_system_unitdir}/pyro-engine.service \
 "
-pkg_postinst_ontarget:${PN}() {
-    chown -R dev:dev /home/dev/pyro-engine
-}
