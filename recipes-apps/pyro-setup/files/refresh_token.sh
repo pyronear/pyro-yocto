@@ -25,12 +25,12 @@ API_BASE="${API_URL}/api/v1"
 echo "Connexion à l'API ($API_BASE) avec le compte SuperAdmin..."
 
 # Retrieve the Administrator token
-echo "Envoi de la requ  te d'authentification vers /login/creds..."
+echo "Envoi de la requete d'authentification vers /login/creds..."
 RAW_RESPONSE=$(curl -s -X POST "${API_URL}/api/v1/login/creds" \
     --data-urlencode "username=$SUPERADMIN_LOGIN" \
     --data-urlencode "password=$SUPERADMIN_PWD")
 
-echo "R  ponse brute du serveur : $RAW_RESPONSE"
+echo "Reponse brute du serveur : $RAW_RESPONSE"
 
 ADMIN_TOKEN=$(echo $RAW_RESPONSE | jq -r .access_token)
 
