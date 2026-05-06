@@ -1,3 +1,39 @@
+# =========================================================================
+# 1. FORMAT ET FONCTIONNALITÉS DE L'IMAGE
+# =========================================================================
+IMAGE_FSTYPES = "wic.bz2 wic.bmap"
+
+# ---CONFIGURATION RAUC---
+# IMAGE_FSTYPES:append = " ext4 raucb"
+# WKS_FILE = "sdimage-dual-raspberrypi.wks.in"
+
+EXTRA_IMAGE_FEATURES:append = " ssh-server-dropbear"
+EXTRA_IMAGE_FEATURES:remove = " debug-tweaks"
+
+# =========================================================================
+# 2. LOGICIELS À INSTALLER
+# =========================================================================
+IMAGE_INSTALL:append = " \
+    sudo \
+    net-tools \
+    docker-moby \
+    docker \
+    docker-compose \
+    pyro-setup \
+    curl \
+    jq \
+    zram \
+"
+# IMAGE_INSTALL:append = " nano"
+# IMAGE_INSTALL:append = " pyro-engine"
+
+# ---CONFIGURATION RAUC---
+# IMAGE_INSTALL:append = " rauc rauc-hawkbit-updater"
+
+# =========================================================================
+# 3. CONFIGURATION DE L'UTILISATEUR ET DES DROITS
+# =========================================================================
+
 inherit extrausers
 
 # Encrypted password
