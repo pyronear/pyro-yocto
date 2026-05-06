@@ -97,50 +97,8 @@ Copy and paste the following text at the end of the file :
 ```
 MACHINE = "raspberrypi5"
 
-INIT_MANAGER = "systemd"
-
-IMAGE_FSTYPES = "wic.bz2"
-IMAGE_FSTYPES:append = " wic.bmap"
-
-ENABLE_UART = "1"
-
-RPI_EXTRA_CONFIG:append = "\\ndtoverlay=uart0-pi5\\n"
-
-SERIAL_CONSOLES = "115200;ttyAMA0"
-
-LICENSE_FLAGS_ACCEPTED = "synaptics-killswitch"
-
-EXTRA_IMAGE_FEATURES:append = " ssh-server-dropbear"
-
-EXTRA_IMAGE_FEATURES:remove = "debug-tweaks"
-
-#IMAGE_INSTALL:append = " sudo"
-IMAGE_INSTALL:append = " net-tools"
-#IMAGE_INSTALL:append = " pyro-engine"
-
-DISTRO_FEATURES:append = " virtualization"
-IMAGE_INSTALL:append = " docker-moby"
-IMAGE_INSTALL:append = " pyro-setup"
-IMAGE_INSTALL:append = " docker docker-compose"
-IMAGE_INSTALL:append = " curl jq"
-#IMAGE_INSTALL:append = " nano"
-IMAGE_INSTALL:append = " zram"
-
-MACHINE_FEATURES:remove = " screen touchscreen alsa bluetooth"
-DISTRO_FEATURES:remove = " x11 wayland opengl vulkan alsa bluetooth nfc pcmcia ptest debuginfod zeroconf nfs usbgadget multiarch"
-
 INHERIT += "rm_work"
 RM_WORK_EXCLUDE += "pyro-setup"
-
-PACKAGECONFIG:pn-curl = "basic-auth bearer-auth openssl random threaded-resolver zlib"
-PACKAGECONFIG:pn-jq = ""
-PACKAGECONFIG:pn-parted = ""
-
-KERNEL_MODULE_AUTOLOAD += "zram"
-
-# Interdire l'installation 
-BAD_RECOMMENDATIONS += "udev-hwdb"
-BAD_RECOMMENDATIONS += "file"
 ```
 We are going to enable the Shared State Cache feature.
 To use sscache, uncomment the below lines :
@@ -151,6 +109,11 @@ SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfil
 BB_HASHSERVE = "auto"
 BB_SIGNATURE_HANDLER = "OEEquivHash"
 ```
+Finally, change the distribution **DISTRO ?= "poky"** by :
+```
+DISTRO = "pyronear-os"
+```
+
 ### credentials.json
 * Go to this location --> **poky/meta-pyronear/recipes-apps/pyro-setup/files**
 * Create the "data" folder
