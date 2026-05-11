@@ -21,103 +21,47 @@ sudo apt install bmap-tools
 
 We will use the “Scarthgap” version of Yocto.
 
-#### Clone poky
+#### Yocto Cooker :
 
-[https://git.yoctoproject.org/poky](https://git.yoctoproject.org/poky)
+[https://github.com/cpb-/yocto-cooker.git](https://github.com/cpb-/yocto-cooker.git)
 
+* Run `python3 .venv` in your project folder.
 ```
-git clone -b scarthgap https://git.yoctoproject.org/poky
+python3 -m venv .venv
+source .venv/bin/activate
 ```
-Navigate to the poky folder
+* Install Yocto Coocker.
 ```
-cd poky
+python3 -m pip install --upgrade git+https://github.com/cpb-/yocto-cooker.git
 ```
-#### Clone meta-raspberrypi
-
-[https://git.yoctoproject.org/meta-raspberrypi](https://git.yoctoproject.org/meta-raspberrypi)
-
+* Exit `python3 .venv`.
 ```
-cd poky
-git clone -b scarthgap https://git.yoctoproject.org/meta-raspberrypi
+deactivate
 ```
 
-#### Clone meta-openembedded
+#### Clone Pyro Engine Yocto :
 
-[https://git.openembedded.org/meta-openembedded](https://git.openembedded.org/meta-openembedded)
-
-```
-git clone -b scarthgap https://git.openembedded.org/meta-openembedded
-```
-#### Clone meta-virtualization
-
-[https://git.yoctoproject.org/meta-virtualization](https://git.yoctoproject.org/meta-virtualization)
+[https://git.smile.fr/stages-ecs-2026-yocto-pyronear/pyro-engine-yocto.git](https://git.smile.fr/stages-ecs-2026-yocto-pyronear/pyro-engine-yocto.git)
 
 ```
-git clone -b scarthgap https://git.yoctoproject.org/meta-virtualization
+git clone https://git.smile.fr/stages-ecs-2026-yocto-pyronear/pyro-engine-yocto.git
 ```
-
-### Add meta-pyronear
-
-* Clone git repository
-
-```
-git clone https://github.com/yolec-sml/pyro-yocto-engine.git
-```
-* Rename the “pyro-yocto-engine” folder to “meta-pyronear”
 
 ## 🧩 Configuration
 
-* Go to the root of the poky folder
-* Run the following command
+* Go to the root folder of the project
+* We are going to configure the layer `meta-pyronear`
 ```
-source oe-init-build-env
-```
-This will automatically place it in the build folder
-
-### Conf folder
-
-* We are going to edit the file bblayers.conf :
-```
-bitbake-layers add-layer ../meta-raspberrypi
-bitbake-layers add-layer ../meta-openembedded/meta-oe
-bitbake-layers add-layer ../meta-openembedded/meta-python
-bitbake-layers add-layer ../meta-openembedded/meta-networking
-bitbake-layers add-layer ../meta-openembedded/meta-multimedia
-bitbake-layers add-layer ../meta-openembedded/meta-filesystems
-bitbake-layers add-layer ../meta-virtualization
-bitbake-layers add-layer ../meta-pyronear
-```
-* Check that all layers are installed correctly :
-```
-bitbake-layers show-layers
-```
-* We are going to edit the file local.conf --> **build/conf/local.conf**
-
-Copy and paste the following text at the end of the file :
-```
-MACHINE = "raspberrypi5"
-
-INHERIT += "rm_work"
-RM_WORK_EXCLUDE += "pyro-setup"
-```
-We are going to enable the Shared State Cache feature.
-To use sscache, uncomment the below lines :
-
-```
-BB_HASHSERVE_UPSTREAM = 'wss://hashserv.yoctoproject.org/ws'
-SSTATE_MIRRORS ?= "file://.* http://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
-BB_HASHSERVE = "auto"
-BB_SIGNATURE_HANDLER = "OEEquivHash"
-```
-Finally, change the distribution **DISTRO ?= "poky"** by :
-```
-DISTRO = "pyronear-os"
+cd local-layers/meta-pyronear
 ```
 
-### credentials.json
-* Go to this location --> **poky/meta-pyronear/recipes-apps/pyro-setup/files**
+### credentials.json :
+* Go to this location --> **recipes-apps/pyro-setup/files**
+```
+cd recipes-apps/pyro-setup/files
+```
 * Create the "data" folder
-* Create and edit the credentials.json file with :
+* Create and edit the `credentials.json` file with :
 
 ```
 {
@@ -140,7 +84,10 @@ To configure other types of camera, please refer to the pyro-engine Readme ([htt
 
 ### Environment variables
 
-* Go to this location --> **poky/meta-pyronear/recipes-apps/pyro-setup/files**
+* Go to this location --> **recipes-apps/pyro-setup/files**
+```
+cd recipes-apps/pyro-setup/files
+```
 * Create the .env file :
 ```
 cp .env.example .env
@@ -165,7 +112,10 @@ sudo apt install whois
 ```
 printf "%q" $(mkpasswd -m sha256crypt new_password)
 ```
-* Edit the file "core-image-minimal.bbappend", which is located here --> **poky/meta-pyronear/recipes-core/images**
+* Edit the file "core-image-minimal.bbappend", which is located here --> **local-layers/meta-pyronear/recipes-core/images**
+```
+cd recipes-core/images
+```
 ```
 # Encrypted password
 PASSWD = "new_password"
@@ -175,24 +125,29 @@ EXTRA_USERS_PARAMS = "useradd -p '${PASSWD}' -d /home/new_user -m -s /bin/sh -G 
 ```
 Replace "new_password" with your new encrypted password and "new_user" with the new username.
 
-* Finally, edit the "pyro-setup.bb" and "pyro-engine.service" files by replacing all instances of "/home/dev" with "/home/new_user". You can find this file here --> **poky/meta-pyronear/recipes-apps/pyro-setup** // **poky/meta-pyronear/recipes-apps/pyro-setup/files**
+* Finally, edit the "pyro-setup.bb" and "pyro-engine.service" files by replacing all instances of "/home/dev" with "/home/new_user". 
+
+* You can find this file here :
+
+**local-layers/meta-pyronear/recipes-apps/pyro-setup**
+```
+cd recipes-apps/pyro-setup
+```
+**local-layers/meta-pyronear/recipes-apps/pyro-setup/files**
+```
+cd recipes-apps/pyro-setup/files
+```
 
 ## 💻 Build
 
-* Run from the Poky root directory :
-
+* Go back to the root directory of your project, where you installed `Yocto Cooker`.
+* Run `python3 .venv`.
 ```
-source oe-init-build-env
+source .venv/bin/activate
 ```
-
-* Before building, make sure that the ".bbappend" files in the "meta-pyronear" layer are correctly detected and linked to the source recipes :
+* Start the build with `Yocto Cooker`.
 ```
-bitbake-layers show-appends | grep -E 'zram|core-image-minimal'
-```
-
-* Then run the build :
-```
-bitbake core-image-minimal
+cooker cook menu.json
 ```
 
 ## 💾 Flash micro-sd card
@@ -203,7 +158,12 @@ bitbake core-image-minimal
 lsblk
 ```
 * Unmount the Bootfs and Rootfs partitions on the microSD card.
-* Go to the folder --> **/poky/build/tmp/deploy/images/raspberrypi5**
+* Go to the folder --> **pyro-yocto-engine/builds/build-dev-pyro-rpi5/tmp/deploy/images/raspberrypi5**
+
+```
+cd builds/build-dev-pyro-rpi5/tmp/deploy/images/raspberrypi5
+```
+
 * Run the following command and replace "location_microSD" with your own location :
 ```
 sudo bmaptool copy core-image-minimal-raspberrypi5.rootfs.wic.bz2 /dev/location_microSD
@@ -243,7 +203,7 @@ ssh dev@IP_Pi5
 ```
 * Go to the pyro-engine folder :
 ```
-cd /home/dev/pyro-engine/
+cd pyro-engine/
 ```
 * Refresh the API token :
 ```
@@ -266,7 +226,7 @@ In fact, the next time you restart the Raspberry Pi 5 (without flashing the micr
 
 Run this command to check that everything is working properly :
 ```
-cd /home/dev/pyro-engine/
+cd pyro-engine/
 docker logs -f engine
 ```
 If you see that nothing has started, you can restart the AI manually by following the instructions above.
