@@ -1,5 +1,11 @@
 .env
 credentials.json
+.cookerconfig
+/.venv
+/builds
+/downloads
+/layers
+/sstate-cache
 
 *~
 *.swp
