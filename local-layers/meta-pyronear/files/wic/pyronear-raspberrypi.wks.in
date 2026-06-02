@@ -1,0 +1,5 @@
+# Industrial Partitioning PyroNear (Yocto Wrynose 6.0 + systemd-growfs)
+bootloader --ptable gpt
+part /boot --source bootimg-partition --ondisk mmcblk0 --fstype=vfat --label boot --active --align 4096
+part / --source rootfs --ondisk mmcblk0 --fstype=ext4 --label rootfs --align 1024 --exclude-path data/
+part /data --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/data --ondisk mmcblk0 --fstype=ext4 --label data --align 1024 --fsoptions="defaults,noatime,x-systemd.growfs"
