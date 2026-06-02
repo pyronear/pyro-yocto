@@ -16,7 +16,7 @@
             "dir": "meta-openembedded"
         },
         {
-            "url": "git://git.yoctoproject.org/meta-raspberrypi",
+            "url": "https://git.yoctoproject.org/meta-raspberrypi",
             "branch": "scarthgap",
             "dir": "meta-raspberrypi"
         },
@@ -37,7 +37,7 @@
     ],
     "builds": {
         "dev-pyro-rpi5": {
-            "target": "core-image-minimal",
+            "target": "pyronear-image",
             "layers": [
                 "meta-raspberrypi",
                 "meta-openembedded/meta-python",
@@ -48,13 +48,8 @@
                 "../local-layers/meta-pyronear"
             ],
             "local.conf": [
-                "MACHINE = 'raspberrypi5'                                ",
+                "MACHINE = 'pyronear-rpi5'                               ",
                 "DISTRO = 'pyronear-os'                                  ",
-                "ENABLE_UART = '1'                                       ",
-                "# The following lines allow the use of the Raspberry Pi ",
-                "# classical serial port on P1 header                    ",
-                "RPI_EXTRA_CONFIG:append = 'dtoverlay=uart0-pi5'     ",
-                "SERIAL_CONSOLES = '115200;ttyAMA0'                      ",
                 "RM_WORK_EXCLUDE += 'pyro-setup'                         "
             ]
         }
