@@ -1,0 +1,75 @@
+{
+    "description": "Yocto pyronear bitbake-setup configuration",
+    "sources": {
+        "bitbake": {
+            "git-remote": {
+                "uri": "https://git.openembedded.org/bitbake",
+                "rev": "master"
+            },
+            "path": "bitbake"
+        },
+        "openembedded-core": {
+            "git-remote": {
+                "uri": "https://git.openembedded.org/openembedded-core",
+                "rev": "wrynose"
+            },
+            "path": "openembedded-core"
+        },
+        "meta-openembedded": {
+            "git-remote": {
+                "uri": "https://git.openembedded.org/meta-openembedded",
+                "rev": "wrynose"
+            },
+            "path": "meta-openembedded"
+        },
+        "meta-raspberrypi": {
+            "git-remote": {
+                "uri": "https://git.yoctoproject.org/meta-raspberrypi",
+                "rev": "master"
+            },
+            "path": "meta-raspberrypi"
+        },
+        "meta-virtualization": {
+            "git-remote": {
+                "uri": "https://git.yoctoproject.org/meta-virtualization",
+                "rev": "wrynose"
+            },
+            "path": "meta-virtualization"
+        },
+        "meta-yocto": {
+            "git-remote": {
+                "uri": "https://git.yoctoproject.org/meta-yocto",
+                "rev": "wrynose"
+            },
+            "path": "meta-yocto"
+        }
+    },
+    "bitbake-setup": {
+        "configurations": [
+            {
+                "name": "Pyro conf for rpi5",
+                "description": "Configure the build for rpi5",
+                "bb-layers": [
+                    "openembedded-core/meta",
+                    "meta-openembedded/meta-oe",
+                    "meta-yocto/meta-poky",
+                    "meta-yocto/meta-yocto-bsp",
+                    "meta-raspberrypi",
+                    "meta-openembedded/meta-python",
+                    "meta-openembedded/meta-networking",
+                    "meta-openembedded/meta-multimedia",
+                    "meta-openembedded/meta-filesystems",
+                    "meta-virtualization"
+                ],
+                "bb-layers-file-relative": [
+                    "local-layers/meta-pyronear"
+                ],
+                "oe-fragments": [
+                    "distro/pyronear-os",
+                    "machine/pyronear-rpi5"
+                ]
+            }
+        ]
+    },
+    "version": "1.0"
+}
