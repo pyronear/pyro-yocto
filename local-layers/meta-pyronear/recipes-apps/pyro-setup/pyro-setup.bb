@@ -4,16 +4,16 @@ LICENSE = "CLOSED"
 inherit systemd
 
 RDEPENDS:${PN} += "parted e2fsprogs-resize2fs curl jq"
-
+#parted e2fsprogs-resize2fs
 # List of all our files
 SRC_URI = " \
     file://docker-compose.yml \
     file://.env \
     file://data/credentials.json \
-    file://expand-rootfs.sh \
-    file://expand-rootfs.service \
     file://refresh_token.sh \
     file://pyro-engine.service \
+    file://expand-rootfs.sh \
+    file://expand-rootfs.service\
 "
 
 # We prevent Yocto from attempting to compile code
@@ -22,6 +22,8 @@ do_compile[noexec] = "1"
 
 # Configure the service to start automatically
 SYSTEMD_SERVICE:${PN} = "expand-rootfs.service pyro-engine.service"
+# expand-rootfs.service
+
 SYSTEMD_AUTO_ENABLE = "enable"
 
 do_install() {
@@ -52,7 +54,7 @@ pkg_postinst_ontarget:${PN}() {
 # Listing all files included in the package
 FILES:${PN} += " \
     /home/dev \
+    ${systemd_system_unitdir}/pyro-engine.service \
     /usr/bin/expand-rootfs.sh \
     ${systemd_system_unitdir}/expand-rootfs.service \
-    ${systemd_system_unitdir}/pyro-engine.service \
 "
