@@ -8,13 +8,13 @@ RDEPENDS:${PN} += "parted e2fsprogs-resize2fs curl jq"
 # List of all our files
 SRC_URI = " \
     file://docker-compose.yml \
-    file://.env \
-    file://data/credentials.json \
     file://refresh_token.sh \
     file://pyro-engine.service \
     file://expand-rootfs.sh \
     file://expand-rootfs.service\
 "
+
+S = "${UNPACKDIR}"
 
 # We prevent Yocto from attempting to compile code
 do_configure[noexec] = "1"
@@ -30,21 +30,22 @@ do_install() {
     # We create the destination folders on the Pi 5
     install -d ${D}/home/dev/pyro-engine
     install -d ${D}/home/dev/pyro-engine/data
-    install -m 0644 ${WORKDIR}/docker-compose.yml ${D}/home/dev/pyro-engine/
-    install -m 0600 ${WORKDIR}/.env ${D}/home/dev/pyro-engine/
-    install -m 0644 ${WORKDIR}/data/credentials.json ${D}/home/dev/pyro-engine/data/
+    install -m 0644 ${S}/docker-compose.yml ${D}/home/dev/pyro-engine/
+    
+    #install -m 0600 ${S}/.env ${D}/home/dev/pyro-engine/
+    #install -m 0644 ${S}/data/credentials.json ${D}/home/dev/pyro-engine/data/
 
     # Installing the token script with execution permissions
-    install -m 0755 ${WORKDIR}/refresh_token.sh ${D}/home/dev/pyro-engine/
+    install -m 0755 ${S}/refresh_token.sh ${D}/home/dev/pyro-engine/
 
     # Installing the enlargement script
     install -d ${D}/usr/bin
-    install -m 0755 ${WORKDIR}/expand-rootfs.sh ${D}/usr/bin/
+    install -m 0755 ${S}/expand-rootfs.sh ${D}/usr/bin/
 
     # Installing the Systemd service file
     install -d ${D}${systemd_system_unitdir}
-    install -m 0644 ${WORKDIR}/expand-rootfs.service ${D}${systemd_system_unitdir}/
-    install -m 0644 ${WORKDIR}/pyro-engine.service ${D}${systemd_system_unitdir}/
+    install -m 0644 ${S}/expand-rootfs.service ${D}${systemd_system_unitdir}/
+    install -m 0644 ${S}/pyro-engine.service ${D}${systemd_system_unitdir}/
 }
 
 pkg_postinst_ontarget:${PN}() {
