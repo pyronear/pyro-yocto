@@ -1,61 +1,50 @@
-SUMMARY = "Installation des fichiers de configuration pour PyroEngine Docker"
+SUMMARY = "PyroEngine application orchestration and deployment"
 LICENSE = "CLOSED"
 
 inherit systemd
 
-RDEPENDS:${PN} += "parted e2fsprogs-resize2fs curl jq"
-#parted e2fsprogs-resize2fs
-# List of all our files
+RDEPENDS:${PN} += "curl jq docker-compose"
+
 SRC_URI = " \
     file://docker-compose.yml \
+    file://.env \
+    file://data/credentials.json \
     file://refresh_token.sh \
+    file://pyro-init.sh \
+    file://pyro-init.service \
     file://pyro-engine.service \
-    file://expand-rootfs.sh \
-    file://expand-rootfs.service\
+    file://pyro-images.tar;unpack=false \
 "
 
 S = "${UNPACKDIR}"
 
-# We prevent Yocto from attempting to compile code
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
-# Configure the service to start automatically
-SYSTEMD_SERVICE:${PN} = "expand-rootfs.service pyro-engine.service"
-# expand-rootfs.service
-
+SYSTEMD_SERVICE:${PN} = "pyro-init.service pyro-engine.service"
 SYSTEMD_AUTO_ENABLE = "enable"
 
 do_install() {
-    # We create the destination folders on the Pi 5
-    install -d ${D}/home/dev/pyro-engine
-    install -d ${D}/home/dev/pyro-engine/data
-    install -m 0644 ${S}/docker-compose.yml ${D}/home/dev/pyro-engine/
-    
-    #install -m 0600 ${S}/.env ${D}/home/dev/pyro-engine/
-    #install -m 0644 ${S}/data/credentials.json ${D}/home/dev/pyro-engine/data/
+    # 1. Install application software suite in the DATA space
+    install -d ${D}/data/pyro-engine/data
+    install -m 0644 ${S}/docker-compose.yml ${D}/data/pyro-engine/
+    install -m 0600 ${S}/.env ${D}/data/pyro-engine/
+    install -m 0644 ${S}/data/credentials.json ${D}/data/pyro-engine/data/
+    install -m 0755 ${S}/refresh_token.sh ${D}/data/pyro-engine/
+    install -m 0644 ${S}/pyro-images.tar ${D}/data/pyro-engine/
 
-    # Installing the token script with execution permissions
-    install -m 0755 ${S}/refresh_token.sh ${D}/home/dev/pyro-engine/
+    # 2. Application initialization scripts and services
+    install -d ${D}${bindir}
+    install -m 0755 ${S}/pyro-init.sh ${D}${bindir}/pyro-init.sh
 
-    # Installing the enlargement script
-    install -d ${D}/usr/bin
-    install -m 0755 ${S}/expand-rootfs.sh ${D}/usr/bin/
-
-    # Installing the Systemd service file
     install -d ${D}${systemd_system_unitdir}
-    install -m 0644 ${S}/expand-rootfs.service ${D}${systemd_system_unitdir}/
-    install -m 0644 ${S}/pyro-engine.service ${D}${systemd_system_unitdir}/
+    install -m 0644 ${S}/pyro-init.service ${D}${systemd_system_unitdir}/pyro-init.service
+    install -m 0644 ${S}/pyro-engine.service ${D}${systemd_system_unitdir}/pyro-engine.service
 }
 
-pkg_postinst_ontarget:${PN}() {
-    chown -R dev:dev /home/dev/pyro-engine
-}
-
-# Listing all files included in the package
 FILES:${PN} += " \
-    /home/dev \
+    /data/pyro-engine \
+    ${bindir}/pyro-init.sh \
+    ${systemd_system_unitdir}/pyro-init.service \
     ${systemd_system_unitdir}/pyro-engine.service \
-    /usr/bin/expand-rootfs.sh \
-    ${systemd_system_unitdir}/expand-rootfs.service \
 "
