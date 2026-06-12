@@ -1,12 +1,13 @@
 [Unit]
 Description=Auto-expand RootFS Partition on first boot
-ConditionPathExists=!/data/.resized
-After=local-fs.target
+DefaultDependencies=no
+After=systemd-udevd.service
 Before=pyro-init.service docker.service containerd.service
+ConditionPathExists=!/data/.resized
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/expand-rootfs.sh
+ExecStart=/usr/bin/expand-data.sh
 RemainAfterExit=yes
 
 [Install]
