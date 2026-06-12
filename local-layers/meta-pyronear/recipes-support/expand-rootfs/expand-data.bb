@@ -3,7 +3,7 @@ LICENSE = "CLOSED"
 
 inherit systemd
 
-RDEPENDS:${PN} += "e2fsprogs-resize2fs util-linux"
+RDEPENDS:${PN} += "parted e2fsprogs-resize2fs util-linux"
 
 SRC_URI = " \
     file://expand-data.sh \
