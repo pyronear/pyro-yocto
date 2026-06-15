@@ -8,12 +8,12 @@ Wants=docker.service network-online.target time-sync.target
 Type=oneshot
 User=dev
 Group=docker
-WorkingDirectory=/data/pyro-engine
+WorkingDirectory=/data/pyro-engine-home
 
 # SECURITY EMBEDDED: A verification loop in case systemd-timesyncd is lazy
 # This script blocks the service as long as the year/month corresponds to the build date (March 13)
 ExecStartPre=/bin/sh -c 'until [ $(date +%%s) -gt 1773416400 ]; do echo "Waiting for network time synchronization..."; sleep 1; done'
-ExecStartPre=/data/pyro-engine/refresh_token.sh
+ExecStartPre=/data/pyro-engine-home/refresh_token.sh
 ExecStartPre=/bin/sh -c 'if [ ! -f .images_loaded ]; then echo "Loading Docker image..."; docker load -i pyro-images.tar && touch .images_loaded; fi'
 
 ExecStart=/usr/bin/docker compose up -d

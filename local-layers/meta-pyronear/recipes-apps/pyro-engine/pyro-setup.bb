@@ -26,12 +26,12 @@ SYSTEMD_AUTO_ENABLE = "enable"
 
 do_install() {
     # 1. Install application software suite in the DATA space
-    install -d ${D}/data/pyro-engine/data
-    install -m 0644 ${S}/docker-compose.yml ${D}/data/pyro-engine/
-    install -m 0600 ${S}/.env ${D}/data/pyro-engine/
-    install -m 0644 ${S}/data/credentials.json ${D}/data/pyro-engine/data/
-    install -m 0755 ${S}/refresh_token.sh ${D}/data/pyro-engine/
-    install -m 0644 ${S}/pyro-images.tar ${D}/data/pyro-engine/
+    install -d ${D}/data/pyro-engine-home/data
+    install -m 0644 ${S}/docker-compose.yml ${D}/data/pyro-engine-home/
+    install -m 0600 ${S}/.env ${D}/data/pyro-engine-home/
+    install -m 0644 ${S}/data/credentials.json ${D}/data/pyro-engine-home/data/
+    install -m 0755 ${S}/refresh_token.sh ${D}/data/pyro-engine-home/
+    install -m 0644 ${S}/pyro-images.tar ${D}/data/pyro-engine-home/
 
     # 2. Application initialization scripts and services
     install -d ${D}${bindir}
@@ -43,7 +43,7 @@ do_install() {
 }
 
 FILES:${PN} += " \
-    /data/pyro-engine \
+    /data/pyro-engine-home \
     ${bindir}/pyro-init.sh \
     ${systemd_system_unitdir}/pyro-init.service \
     ${systemd_system_unitdir}/pyro-engine.service \
