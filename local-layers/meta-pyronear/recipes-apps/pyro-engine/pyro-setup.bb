@@ -10,14 +10,9 @@ DEPENDS += "docker-moby"
 RDEPENDS:${PN} += "curl jq docker-compose"
 
 SRC_URI = " \
-    file://docker-compose.yml \
-    file://.env \
-    file://data/credentials.json \
-    file://refresh_token.sh \
     file://pyro-init.sh \
     file://pyro-init.service \
     file://pyro-engine.service \
-    file://pyro-images.tar;unpack=false \
 "
 
 S = "${UNPACKDIR}"
@@ -31,11 +26,6 @@ SYSTEMD_AUTO_ENABLE = "enable"
 do_install() {
     # 1. Install application software suite in the DATA space
     install -d ${D}/data/pyro-engine-home/data
-    install -m 0644 ${S}/docker-compose.yml ${D}/data/pyro-engine-home/
-    install -m 0600 ${S}/.env ${D}/data/pyro-engine-home/
-    install -m 0644 ${S}/data/credentials.json ${D}/data/pyro-engine-home/data/
-    install -m 0755 ${S}/refresh_token.sh ${D}/data/pyro-engine-home/
-    install -m 0644 ${S}/pyro-images.tar ${D}/data/pyro-engine-home/
 
     # 2. Application initialization scripts and services
     install -d ${D}${bindir}
