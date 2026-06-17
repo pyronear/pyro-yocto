@@ -7,5 +7,5 @@ mkdir -p /data/docker /data/containerd /data/dropbear
 # Ownership reassignment to non-root user
 if [ -d "/data/pyro-engine-home" ]; then
     chown -R dev:docker /data/pyro-engine-home
-    chmod +x /data/pyro-engine-home/refresh_token.sh
+    chmod -R g+w /data/pyro-engine-home
 fi
