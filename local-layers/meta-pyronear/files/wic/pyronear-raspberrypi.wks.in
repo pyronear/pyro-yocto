@@ -1,6 +1,15 @@
-# Industrial Partitioning PyroNear (Yocto Wrynose 6.0 + systemd-growfs)
+# ===============================================================================================================================================================================================================
+# Partition layout:
+# - p1: boot (VFAT, contains the bootloader and kernel)
+# - p2: rootfs (ext4, read-only root filesystem)
+# - p3: data (ext4, writable partition used for persistent data, including /etc modifications, Pyronear files, and containers)
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 1. RootFS Partition: Built using the rootfs source, explicitly EXCLUDING the '/data' directory to ensure the base system remains Read-Only and clean.
+# 2. Data Partition: Built by extracting ONLY the '/data' directory from the rootfs source, creating a dedicated partition for application state and configuration, optimized for persistence and overlay mounts.
+# ===============================================================================================================================================================================================================
 #part-name = PARTLABEL and --label = LABEL
+
 bootloader --ptable gpt
-part /boot  --source bootimg-partition                        --ondisk mmcblk0 --fstype=vfat --label boot   --part-name boot   --align 4096 --size 100M --active 
+part /boot  --source bootimg-partition                        --ondisk mmcblk0 --fstype=vfat --label boot   --part-name boot   --align 4096 --size 100M --active
 part /      --source rootfs --exclude-path data/              --ondisk mmcblk0 --fstype=ext4 --label rootfs --part-name rootfs --align 1024 --size 1G
-part /data  --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/data --ondisk mmcblk0 --fstype=ext4 --label dataA  --part-name data   --align 1024 --size 32M   
+part /data  --source rootfs --rootfs-dir=${IMAGE_ROOTFS}/data --ondisk mmcblk0 --fstype=ext4 --label dataA  --part-name data   --align 1024 --size 32M
