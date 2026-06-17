@@ -1,7 +1,11 @@
 SUMMARY = "PyroEngine application orchestration and deployment"
 LICENSE = "CLOSED"
 
-inherit systemd
+inherit systemd useradd
+
+USERADD_PACKAGES = "${PN}"
+USERADD_PARAM:${PN} = "--system --no-create-home --shell /bin/false --user-group --groups docker engine"
+DEPENDS += "docker-moby"
 
 RDEPENDS:${PN} += "curl jq docker-compose"
 
