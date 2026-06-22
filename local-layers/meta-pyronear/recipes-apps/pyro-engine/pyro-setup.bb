@@ -4,7 +4,7 @@ LICENSE = "CLOSED"
 inherit systemd useradd
 
 USERADD_PACKAGES = "${PN}"
-USERADD_PARAM:${PN} = "--system --no-create-home --shell /bin/false --user-group --groups docker engine"
+USERADD_PARAM:${PN} = "--system -d /data/pyro-engine-home -m --shell /bin/false --user-group --groups docker engine"
 DEPENDS += "docker-moby"
 
 RDEPENDS:${PN} += "curl jq docker-compose"
