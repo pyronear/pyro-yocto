@@ -32,14 +32,10 @@ IMAGE_FEATURES += " \
 IMAGE_INSTALL += " \
     sudo \
     net-tools \
-    docker-moby \
-    docker \
-    docker-compose \
-    curl \
-    jq \
     zram \
     pyro-setup \
     expand-data \
+    data-provisioning \
     nano \
 "
 
