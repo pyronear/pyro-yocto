@@ -1,0 +1,13 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+SRC_URI += "file://config.toml"
+
+do_install:append() {
+    install -d ${D}${sysconfdir}/containerd
+    install -m 0644 ${UNPACKDIR}/config.toml ${D}${sysconfdir}/containerd/config.toml
+
+    # Prepare /data/containerd for the RW data partition
+    # NOTE: Since RootFS is Read-Only, /data is extracted into a separate partition.
+    install -d ${D}/data/containerd
+}
+
+FILES:${PN} += "/data/containerd"
