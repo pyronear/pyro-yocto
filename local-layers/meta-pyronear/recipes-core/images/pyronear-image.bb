@@ -1,5 +1,4 @@
 inherit core-image 
-inherit extrausers
 
 # =========================================================================
 # 1. IMAGE FORMAT AND FEATURES
@@ -30,13 +29,26 @@ IMAGE_FEATURES += " \
 # =========================================================================
 # Yocto includes automatically 'packagegroup-core-boot', we add the rest
 IMAGE_INSTALL += " \
-    sudo \
     net-tools \
-    zram \
-    pyro-setup \
-    expand-data \
-    data-provisioning \
     nano \
+    zram \
+    expand-data \
+"
+
+# For Ansible deployment :
+IMAGE_INSTALL += " \
+    git \
+    openvpn \
+    networkmanager-nmcli \
+    ca-certificates \
+    python3 \
+    python3-docker \
+    cronie \
+    user-pi \
+"
+# Pyro-setup
+IMAGE_INSTALL += " \
+    pyro-setup \
 "
 
 # Use a custom wic file for hardware partitioning
