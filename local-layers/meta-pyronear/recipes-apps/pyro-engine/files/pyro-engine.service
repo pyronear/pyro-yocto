@@ -1,24 +1,24 @@
 [Unit]
 Description=PyroEngine Application Start
-After=docker.service pyro-init.service network-online.target time-sync.target
+After=docker.service network-online.target time-sync.target
 Wants=docker.service network-online.target time-sync.target
 
-ConditionPathExists=/data/home/pyro-engine-home/docker-compose.yml
+# Docker compose file should exist
+ConditionPathExists=/data/home/engine/docker-compose.yml
 
 [Service]
-Type=oneshot
+Type=simple
 # Run as non-privileged 'engine' user for security hardening
 User=engine
-Group=docker
-WorkingDirectory=/data/home/pyro-engine-home
+Group=engine
+WorkingDirectory=/data/home/engine
 
 # Verify network time synchronization (blocking start until system clock is updated)
 ExecStartPre=/bin/sh -c 'until [ $(date +%%s) -gt 1773416400 ]; do echo "Waiting for network time synchronization..."; sleep 1; done'
 
-# Main orchestration command: launch the containers in detached mode
-ExecStart=/usr/bin/docker compose up -d
-
-RemainAfterExit=yes
+# Main orchestration command: launch the containers
+ExecStart=/usr/bin/docker compose up
+ExecStop=/usr/bin/docker compose down
 
 [Install]
 WantedBy=multi-user.target
