@@ -1,0 +1,2 @@
+# Allow all commands with password
+pi ALL=(ALL:ALL) ALL

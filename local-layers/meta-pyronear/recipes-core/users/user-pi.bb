@@ -4,49 +4,53 @@ LICENSE = "CLOSED"
 
 inherit useradd systemd
 
-
-RDEPENDS:${PN} += "sudo"
-
-# =========================================================================
-# Dependencies
-# =========================================================================
-SRC_URI = ""
+SRC_URI = " \
+    file://home-pi.mount \
+    file://pi-provisioning.conf \
+    file://pi \
+"
 
 S = "${UNPACKDIR}"
+
+RDEPENDS:${PN} += "sudo"
 
 # =========================================================================
 # Creation of the pi user
 # =========================================================================
 USERADD_PACKAGES = "${PN}"
 
+# SHA-512 password hash
+# Example generated with: openssl passwd -6 xxxxxxx
 PASSWD = "\$6\$L6/DzLx2WAnQNk91\$43TLlF5Is.bmmgH/g9LqcgtTFpfE4sLWDPlh4.5WqVvwKCSwwhMus21OuZnz4vAZVta/YAPIamKtyC9i9fMMx/"
 
-USERADD_PARAM:${PN} = "-p '${PASSWD}' -d /home/pi -M -G sudo pi"
+USERADD_PARAM:${PN} = "-p '${PASSWD}' -m -G sudo pi"
 
+# ========================================================================
+# Install instruction
+# ========================================================================
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
 
+SYSTEMD_PACKAGES = "${PN}"
+SYSTEMD_SERVICE:${PN} = "home-pi.mount"
+
 do_install() {
 
-    install -d ${D}/home
-    install -d ${D}/data/home/pi
-
-    # Symbolic link /home/pi -> /data/home/pi
-    ln -s /data/home/pi ${D}/home/pi
-
-    # Change ownership of the directories
-    chown -h pi:pi ${D}/home/pi
-    chown -h pi:pi ${D}/data/home/pi
-
-    # Writing sudo configuration directly
+    # Install sudo configuration
     install -d -m 0750 ${D}${sysconfdir}/sudoers.d
-    echo 'pi ALL=(ALL) NOPASSWD: ALL' > ${D}${sysconfdir}/sudoers.d/pi
-    chmod 0440 ${D}${sysconfdir}/sudoers.d/pi
+    install -m 0440 ${S}/pi ${D}${sysconfdir}/sudoers.d/pi
 
+    # Install systemd tmpfiles to update permission on boot
+    install -d ${D}${sysconfdir}/tmpfiles.d
+    install -m 0644 ${S}/pi-provisioning.conf ${D}${sysconfdir}/tmpfiles.d/pi-provisioning.conf
+
+    # Install mount point to bind data partition to pi home
+    install -d ${D}${systemd_system_unitdir}
+    install -m 0644 ${S}/home-pi.mount ${D}${systemd_system_unitdir}/home-pi.mount
 }
 
 FILES:${PN} += " \
-    /home/pi \
-    /data/home/pi \
     ${sysconfdir}/sudoers.d/pi \
+    ${systemd_system_unitdir}/home-pi.mount \
+    ${sysconfdir}/tmpfiles.d/pi-provisioning.conf \
 "
