@@ -35,11 +35,19 @@ IMAGE_INSTALL += " \
     expand-data \
 "
 
+# Network configuration
+# configuration using Networkmanager
+# systemd-networkd is disable in systemd.bbappend
+# add nmcli for user configuration
+IMAGE_INSTALL += " \
+    network-conf \
+    networkmanager-nmcli \
+"
+
 # For Ansible deployment :
 IMAGE_INSTALL += " \
     git \
     openvpn \
-    networkmanager-nmcli \
     ca-certificates \
     python3 \
     python3-docker \
