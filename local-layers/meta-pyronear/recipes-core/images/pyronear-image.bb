@@ -1,5 +1,4 @@
 inherit core-image 
-inherit extrausers
 
 # =========================================================================
 # 1. IMAGE FORMAT AND FEATURES
@@ -30,37 +29,27 @@ IMAGE_FEATURES += " \
 # =========================================================================
 # Yocto includes automatically 'packagegroup-core-boot', we add the rest
 IMAGE_INSTALL += " \
-    sudo \
     net-tools \
-    docker-moby \
-    docker \
-    docker-compose \
-    curl \
-    jq \
-    zram \
-    pyro-setup \
-    expand-data \
     nano \
+    zram \
+    expand-data \
 "
 
-
-# =========================================================================
-# 3. USER AND RIGHTS CONFIGURATION
-# =========================================================================
-# Encrypted password
-PASSWD = "\$5\$/KuxK/HaUZeqqNfQ\$4A2lLvZhINJw.Rc2Qgc7Hxm9hJfrFBrRK49xxp0.cC5"
-
-# User creation
-EXTRA_USERS_PARAMS = "useradd -p '${PASSWD}' -d /data/pyro-engine-home -m -s /bin/sh -G docker dev;"
-
-donner_droits_sudo() {
-    install -d ${IMAGE_ROOTFS}/etc/sudoers.d
-    echo 'dev ALL=(ALL) NOPASSWD: ALL' > ${IMAGE_ROOTFS}/etc/sudoers.d/01_dev_rights
-    chmod 0440 ${IMAGE_ROOTFS}/etc/sudoers.d/01_dev_rights
-}
-
-# Root file system post-processing hook
-ROOTFS_POSTPROCESS_COMMAND += "donner_droits_sudo;"
+# For Ansible deployment :
+IMAGE_INSTALL += " \
+    git \
+    openvpn \
+    networkmanager-nmcli \
+    ca-certificates \
+    python3 \
+    python3-docker \
+    cronie \
+    user-pi \
+"
+# Pyro-setup
+IMAGE_INSTALL += " \
+    pyro-setup \
+"
 
 # Use a custom wic file for hardware partitioning
 WKS_FILE = "pyronear-raspberrypi.wks.in"

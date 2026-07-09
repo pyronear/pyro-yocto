@@ -1,0 +1,15 @@
+[Unit]
+Description=Persistent home directory for pi
+DefaultDependencies=no
+Requires=data.mount
+After=data.mount systemd-tmpfiles-setup.service
+Before=multi-user.target
+
+[Mount]
+What=/data/home/pi
+Where=/home/pi
+Type=none
+Options=bind
+
+[Install]
+WantedBy=multi-user.target
