@@ -10,3 +10,9 @@ do_install:append() {
 
 # Ensure the file is attached to the main systemd package
 FILES:${PN} += "${systemd_system_unitdir}/systemd-timesyncd.service.d/override.conf"
+
+# Remove network managment
+# Networkmanager is used
+PACKAGECONFIG:remove = " \
+    networkd \
+"
