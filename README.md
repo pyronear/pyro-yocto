@@ -51,105 +51,66 @@ The project uses the official `bitbake-setup` tool (introduced in Yocto 5.3+) to
 
 ## 🧩 Configuration
 
-* Go to the root folder of the project.
-* We are going to configure the layer files under `local-layers/meta-pyronear/recipes-apps/pyro-engine/files`:
+### 🤖 Ansible
+Once the environment is configured, we need to install all the essential elements for the operation of Pyronear's AI.
 
-  ```bash
-  cd local-layers/meta-pyronear/recipes-apps/pyro-engine/files
+* Create a folder for the Ansible configuration.
+  ```
+  mkdir Ansible-conf
+  cd Ansible-conf
   ```
 
-### credentials.json:
+* Install the "pi-manager-template" repo inside this Ansible configuration folder:
 
-* Create the "data" folder:
+  ```
+  git clone https://github.com/pyronear/pi-manager-template.git
+  ```
+* Also install the "pi-manager-example" repo in this Ansible configuration folder:
 
-  ```bash
-  mkdir -p data
+  ```
+  git clone https://github.com/pyronear/pi-manager-example.git
+  ```
+* To configure Ansible, we must first place ourselves in a Python venv environment:
+  - We navigate to the same directory as the two folders we just cloned:
+  ```
+  python3 -m venv venv
+  source venv/bin/activate
   ```
 
-* Create and edit the `data/credentials.json` file with:
 
-```json
-{
-  "mock_camera_1": {
-    "name": "mock_camera_1",
-    "adapter": "mock",
-    "type": "static",
-    "pose_ids": [
-      36
-    ],
-    "id": "14",
-    "poses": [],
-    "bbox_mask_url": "",
-    "token": ""
-  }
-}
-```
+Then configure these two repo folders using their respective documentation.
 
-Here, we are configuring the camera for development purposes, hence the use of the term "mock".
-To configure other types of camera, please refer to the pyro-engine Readme ([https://github.com/pyronear/pyro-engine/blob/develop/README.md](https://github.com/pyronear/pyro-engine/blob/develop/README.md)).
+### 🌐 IP Addresses
 
-### Environment variables
+In order to configure Ansible correctly, you need to know the IP address of your Raspberry Pi 5.
 
-* In the same folder (`local-layers/meta-pyronear/recipes-apps/pyro-engine/files`), create the `.env` file:
-
-  ```bash
-  cp .env.example .env
-  ```
-
-* Edit your `.env` file and replace `Ip_PC` with your PC's local IP address:
-
-  ```env
-  # Pyronear API
-  API_URL=http://Ip_PC:5050
-  ```
-
-### Edit user and password (optional)
-
-**Default User** : dev
-
-**Default Password** : salut
-
-* If you haven't installed whois, run this command :
+* **UART (Serial)** : Connect your Raspberry Pi 5 to your PC using a USB-to-TTL (3.3V) adapter. This allows you to access the debug console without a screen.
+* **Ethernet** : Connect the Pi 5 to your PC
+* Open a serial terminal on your PC (e.g. Minicom, Screen or PuTTY) set to a baud rate of 115,200. (It is recommended that you power the Pi 5 via your PC for this operation)
 
 ```bash
-sudo apt install whois
+# Replace /dev/ttyUSB0 with your UART device
+sudo screen /dev/ttyUSB0 115200
 ```
 
-* Generate your own password and copy the output of this command :
+**How to identify your UART adapter ?**
+
+Run "ls /dev/ttyUSB*" or "ls /dev/ttyACM*" before and after plugging in your adapter to see which name appears.
+
+* Once you've logged in, log in as ‘dev’
+* Run the following command to retrieve the IP address:
 
 ```bash
-printf "%q" $(mkpasswd -m sha256crypt new_password)
+ifconfig
 ```
 
-* Edit the file "core-image-minimal.bbappend", which is located here --> **local-layers/meta-pyronear/recipes-core/images**
-
-```bash
-cd recipes-core/images
-```
-
-```file
-# Encrypted password
-PASSWD = "new_password"
-
-# User creation
-EXTRA_USERS_PARAMS = "useradd -p '${PASSWD}' -d /home/new_user -m -s /bin/sh -G docker new_user;"
-```
-
-Replace "new_password" with your new encrypted password and "new_user" with the new username.
-
-* Finally, edit the `pyro-setup.bb` and `pyro-engine.service` files by replacing all instances of `/home/dev` with `/home/new_user`. 
-
-* You can find these files here:
-
-  * **`pyro-setup.bb`**: `local-layers/meta-pyronear/recipes-apps/pyro-engine/pyro-setup.bb`
-  * **`pyro-engine.service`**: `local-layers/meta-pyronear/recipes-apps/pyro-engine/files/pyro-engine.service`
-
+* Finally, switch off the Pi 5, exit the UART connection interface and disconnect your UART connection tool.
 ## 💻 Build
-
 * Source the Yocto/BitBake build environment:
 
   ```bash
-  source bitbake-builds/pyro-yocto/layers/wrynose/oe-init-build-env bitbake-builds/pyro-yocto/build
+  cd bitbake-builds/pyro-yocto/build
+  source init-build-env
   ```
 
 * Start the compilation of the `pyronear-image` custom image:
@@ -186,74 +147,30 @@ lsblk
 sync
 ```
 
-## 🔌 Set up Running
-
-* **UART (Serial)** : Connect your Raspberry Pi 5 to your PC using a USB-to-TTL (3.3V) adapter. This allows you to access the debug console without a screen.
-* **Ethernet** : Connect the Pi 5 to your PC
-* Open a serial terminal on your PC (e.g. Minicom, Screen or PuTTY) set to a baud rate of 115,200. (It is recommended that you power the Pi 5 via your PC for this operation)
-
-```bash
-# Replace /dev/ttyUSB0 with your UART device
-sudo screen /dev/ttyUSB0 115200
-```
-
-**How to identify your UART adapter ?**
-
-Run "ls /dev/ttyUSB*" or "ls /dev/ttyACM*" before and after plugging in your adapter to see which name appears.
-
-* Once you've logged in, log in as ‘dev’
-* Run the following command to retrieve the IP address:
-
-```bash
-ifconfig
-```
-
-* Finally, switch off the Pi 5, exit the UART connection interface and disconnect your UART connection tool.
-
 ## ▶️ Run
 
-* Run pyro-envdev
-* Connect to your Pi 5 via SSH :
+Nous allons maintenant lancer le Ansible configurer précédement.
+
+* Vérifier que l'on se trouve dans l'environnement virtuel Python:
+
+* Ce placer dans le dossier "pi-manager-template"
+  ```bash
+  cd pi-manager-template
+  ```
+
+* lancer la commande:
+  ```bash
+  make ansible-up
+  ```
+
+* Puis déployer Ansible sur la ou les Raspberry Pi avec:
+  ```
+  make deploy-all-engines
+  ```
+## 🛠️ Test
+
+Run this command in the Pi 5 terminal to check that everything is working properly :
 
 ```bash
-ssh dev@IP_Pi5
-```
-
-* Go to the pyro-engine folder :
-
-```bash
-cd pyro-engine/
-```
-
-* Refresh the API token :
-
-```bash
-./refresh_token.sh
-```
-
-* Activate the fire detection system :
-
-```bash
-docker compose up -d
-```
-
-If you want to disable the fire detection system, run this command :
-
-```bash
-docker compose down
-```
-
-### ⚠️ Warning
-
-The method for launching the Pyronear AI described above must be used the first time you launch Docker after flashing the microSD card.
-
-In fact, the next time you restart the Raspberry Pi 5 (without flashing the microSD card), it will refresh its token and launch Docker automatically.
-
-Run this command to check that everything is working properly :
-
-```bash
-cd pyro-engine/
 docker logs -f engine
 ```
-
-If you see that nothing has started, you can restart the AI manually by following the instructions above.
