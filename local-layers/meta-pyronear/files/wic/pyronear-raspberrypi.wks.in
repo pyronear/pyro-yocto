@@ -12,13 +12,13 @@
 bootloader --ptable gpt
 
 # Boot partition
-part /boot  --source bootimg-partition                                     --ondisk mmcblk0  --fstype=vfat  --label boot     --part-name boot     --align 4096  --size 100M  --active  --no-fstab-update
+part /boot  --source bootimg-partition                                     --ondisk mmcblk0  --fstype=vfat  --label boot     --part-name boot     --align 4096  --size 100M  --active
 
 # Système A (RootfsA)
-part /      --source rootfs             --exclude-path data/               --ondisk mmcblk0  --fstype=ext4  --label rootfsA  --part-name rootfsA  --align 1024  --size 1G              --no-fstab-update
+part /      --source rootfs             --exclude-path data/               --ondisk mmcblk0  --fstype=ext4  --label rootfsA  --part-name rootfsA  --align 1024  --size 1G
 
 # Système B (RootfsB)
-part        --source rootfs             --exclude-path data/               --ondisk mmcblk0  --fstype=ext4  --label rootfsB  --part-name rootfsB  --align 1024  --size 1G              --no-fstab-update
+part        --source rootfs             --exclude-path data/               --ondisk mmcblk0  --fstype=ext4  --label rootfsB  --part-name rootfsB  --align 1024  --size 1G
 
 # Persistent Data Partition (Data)
-part /data  --source rootfs             --rootfs-dir=${IMAGE_ROOTFS}/data  --ondisk mmcblk0  --fstype=ext4  --label data     --part-name data     --align 1024  --size 32M             --no-fstab-update
+part /data  --source rootfs             --rootfs-dir=${IMAGE_ROOTFS}/data  --ondisk mmcblk0  --fstype=ext4  --label data     --part-name data     --align 1024  --size 32M

@@ -3,7 +3,7 @@ inherit core-image
 # =========================================================================
 # 1. IMAGE FORMAT AND FEATURES
 # =========================================================================
-IMAGE_FSTYPES = "wic.bz2 wic.bmap ext4"
+IMAGE_FSTYPES = "wic.bz2 wic.bmap ext4 tar.bz2"
 
 # Core features configuration
 IMAGE_FEATURES += " \
@@ -59,3 +59,5 @@ IMAGE_BOOT_FILES:append = " boot.scr"
 
 # Use a custom wic file for hardware partitioning
 WKS_FILE = "pyronear-raspberrypi.wks.in"
+
+WIC_CREATE_EXTRA_ARGS += " --no-fstab-update"
