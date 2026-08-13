@@ -36,13 +36,6 @@
             },
             "path": "meta-rauc"
         },
-        "meta-rauc-community": {
-            "git-remote": {
-                "uri": "https://github.com/rauc/meta-rauc-community.git",
-                "rev": "master"
-            },
-            "path": "meta-rauc-community"
-        },
         "meta-virtualization": {
             "git-remote": {
                 "uri": "https://git.yoctoproject.org/meta-virtualization",
@@ -70,7 +63,6 @@
                     "meta-yocto/meta-yocto-bsp",
                     "meta-raspberrypi",
                     "meta-rauc",
-                    "meta-rauc-community/meta-rauc-raspberrypi",
                     "meta-openembedded/meta-python",
                     "meta-openembedded/meta-networking",
                     "meta-openembedded/meta-multimedia",
