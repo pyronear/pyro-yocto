@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/../../files/key-rauc:${THISDIR}/files:"
 
 RAUC_KEYRING_FILE = "ca.cert.pem"
 

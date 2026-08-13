@@ -28,5 +28,5 @@ RAUC_BUNDLE_SLOTS = "rootfs"
 RAUC_SLOT_rootfs = "pyronear-image-dev"
 RAUC_SLOT_rootfs[fstype] = "ext4"
 
-RAUC_CERT_FILE = "${THISDIR}/../rauc/files/development-1.cert.pem"
-RAUC_KEY_FILE = "${THISDIR}/../rauc/files/development-1.key.pem"
+RAUC_CERT_FILE = "${THISDIR}/../../files/key-rauc/development-1.cert.pem"
+RAUC_KEY_FILE = "${THISDIR}/../../files/key-rauc/development-1.key.pem"
