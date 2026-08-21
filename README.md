@@ -1,13 +1,23 @@
-# pyro-yocto-engine
+# Pyro Yocto
 
-This repository allows you to flash a Yocto image onto a microSD card so you can run Pyro-Engine on a Raspberry Pi 5 in dev mode.
+This repository is the manual for building, flashing, provisioning, and updating the Yocto image used to run Pyro-Engine on a Raspberry Pi 5. It covers:
 
-## ⚙️ Installation
+* Setting up the Yocto build environment and building the `pyronear-image` (dev or prod)
+* Flashing the image onto a microSD card
+* Provisioning the Raspberry Pi 5 with Ansible (network, credentials, Docker services)
+* Building and deploying RAUC OTA update bundles, and managing OS updates
 
-### Prerequisites
+## ✅ Prerequisites
+
+### Hardware
 
 * You will need a Raspberry Pi 5 (minimum 2 GB RAM)
 * You will need a micro SD card (minimum 4 GB)
+
+### Development environment
+
+We will use the "Wrynose" version of Yocto.
+
 * Install the prerequisites for installing Yocto:
 
   ```bash
@@ -21,66 +31,80 @@ This repository allows you to flash a Yocto image onto a microSD card so you can
   sudo apt install bmap-tools
   ```
 
-We will use the "Wrynose" version of Yocto (6.0 LTS).
+* Create a python virtual environment at the root of the project and install the `bitbake` utility in the virtual environment :
 
-### 1. Import meta-pyronear layer :
-
-* Create a folder that will host the pyronear project.
-* Clone the meta-pyronear layer inside this folder:
   ```bash
-  repo address to be defined
+  python3 -m venv .venv
+  source .venv/bin/activate
+  pip install bitbake-setup
   ```
-### 2. Setup the Yocto Build Environment:
+
+  Keep this virtual environment activated: you will need it in the next section to run `bitbake-setup`.
+
+## 💻 Build the image
+
+### Setup the Yocto Build Environment
 
 The project uses the official `bitbake-setup` tool (introduced in Yocto 5.3+) to automate the environment initialization using the `yocto-pyro.conf.json` file.
 
-* **Method 1: Using VS Code**
-  1. Open the project root folder in VS Code.
-  2. Install the official **Yocto Project BitBake** extension.
-  3. The extension will automatically detect `yocto-pyro.conf.json` and prompt you to initialize/configure the environment. Select the configuration named **"Pyro conf for rpi5"**.
+1. Run the initialization command:
 
-* **Method 2: Using the Command Line**
-  1. Clone the `bitbake` repository at the root of the project to access the `bitbake-setup` utility:
+   ```bash
+   bitbake-setup init yocto-pyro.conf.json
+   ```
 
-     ```bash
-     git clone https://git.openembedded.org/bitbake
-     ```
+   When prompted, answer the questions as follows:
 
-  2. Run the initialization command:
+   ```bash
+   A common site.conf file will be created, please check it is correct before running builds
+   ...
 
-     ```bash
-     ./bitbake/bin/bitbake-setup init yocto-pyro.conf.json
-     ```
+   Proceed? (y/N): y
 
-     When prompted, select **"Pyro conf for rpi5"** to initialize the layers and configure the build directory (in our case we have configured it as ```pyro-yocto```).
+   # Press only the "Enter" key without entering a specific name for the setup directory (the default name will be "yocto-pyro-Pyro-conf-for-rpi5")
+   Enter setup directory name [yocto-pyro-Pyro-conf-for-rpi5]:
+   
+   Initializing a setup directory in
+   ...
+   Continue? (y/N): y
+   ```
 
-### 💻 Build
+2. You can now exit the Python virtual environment:
+
+   ```bash
+   deactivate
+   ```
+
+> **Note:** If you use VS Code, you can skip the above and instead open the project root folder, install the official **Yocto Project BitBake** extension, and let it detect `yocto-pyro.conf.json` - it will prompt you to initialize/configure the environment. Select the configuration named **"Pyro conf for rpi5"**.
+
+### Build the pyronear-image
+
 * Source the Yocto/BitBake build environment:
 
   ```bash
-  cd bitbake-builds/pyro-yocto/build
-  source init-build-env
+  source bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/build/init-build-env
   ```
 
 Start the compilation of the `pyronear-image` custom image:
-  * **Production image:**
-    - Contains only what is strictly necessary for the engine to function:
 
-      ```bash
-      bitbake pyronear-image-prod
-      ```
+* **Production image**: Contains only what is strictly necessary to run the Pyro Engine:
 
-  * **Dev image:** 
-    - Contains development and debugging tools:
-      - rootfs access without a password
-      - nano
-      - htop 
+    ```bash
+    bitbake pyronear-image-prod
+    ```
 
-      ```bash
-      bitbake pyronear-image-dev
-      ```
+* **Dev image**:  Contains development and debugging tools:
+  * rootfs access without a password
+  * nano
+  * htop
 
-### 💾 Flash micro-sd card
+    ```bash
+    bitbake pyronear-image-dev
+    ```
+
+  **It is recommended to start by creating the image in dev mode in order to carry out the system configuration more efficiently thanks to the user "root" without password**
+
+## 💾 Flash the microSD card
 
 * Insert the micro SD card into your computer.
 * Note down the path to your microSD card (e.g. /dev/sdb or /dev/mmcblk0) to avoid any write errors :
@@ -93,7 +117,7 @@ Start the compilation of the `pyronear-image` custom image:
 * Go to the deploy folder:
 
   ```bash
-  cd bitbake-builds/pyro-yocto/build/tmp/deploy/images/pyronear-rpi5
+  cd bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/build/tmp/deploy/images/pyronear-rpi5/
   ```
 
 * Run the following command (replace `/dev/location_microSD` with your microSD card device, e.g., `/dev/sdb` or `/dev/mmcblk0`):
@@ -111,68 +135,93 @@ Start the compilation of the `pyronear-image` custom image:
   ```bash
   sync
   ```
-### 🌐 IP Addresses
 
-In order to configure Ansible correctly, you need to know the IP address of your Raspberry Pi 5.
+**Now you can insert the micro-sd card into your Raspberry Pi 5 and turn it on.**
 
-* **UART (Serial)** : Connect your Raspberry Pi 5 to your PC using a USB-to-TTL (3.3V) adapter. This allows you to access the debug console without a screen.
-* **Ethernet** : Connect the Pi 5 to your PC
-* Open a serial terminal on your PC (e.g. Minicom, Screen or PuTTY) set to a baud rate of 115,200. (It is recommended that you power the Pi 5 via your PC for this operation)
+**If you used prod mode during image creation, you will need to log in with the "pi" user. Information about the default password and how to change it is available in the [Pi user login and password](#️-pi-user-login-and-password) section.**
 
-  ```bash
-  # Replace /dev/ttyUSB0 with your UART device
-  sudo screen /dev/ttyUSB0 115200
-                or
-  sudo picocom -b 115200 /dev/ttyUSB0
-  ```
+**You can connect to the Raspberry Pi 5 via SSH or via the UART to finish configuring the system. To do this, please follow the steps in the [Debug connection](#-debug-connection) section.**
 
-**How to identify your UART adapter ?**
+## 🔌 Debug connection
 
-Run "ls /dev/ttyUSB*" or "ls /dev/ttyACM*" before and after plugging in your adapter to see which name appears.
+You need access to your Raspberry Pi 5 to finish configuring it. For the first connection, it is recommended to use Ethernet.
 
-* Once you've logged in
-* Run the following command to retrieve the IP address:
+### UART
+
+Connect your Raspberry Pi 5 to your PC using a USB-to-TTL (3.3V) adapter. This gives you access to the debug console without a screen or a network connection, and is the way to retrieve the Ethernet IP address when the target is configured for DHCP (see SSH below).
+
+* Open a serial terminal on your PC (e.g. Minicom, Screen or PuTTY) set to a baud rate of 115,200.
 
   ```bash
-  ifconfig
+    # Replace /dev/ttyUSB0 with your UART device
+    sudo screen /dev/ttyUSB0 115200
+                  or
+    sudo picocom -b 115200 /dev/ttyUSB0
   ```
 
-* Finally, switch off the Pi 5, exit the UART connection interface and disconnect your UART connection tool.
+  **How to identify your UART adapter ?**
 
-## 🧩 Configuration
+  Run "ls /dev/ttyUSB*" or "ls /dev/ttyACM*" before and after plugging in your adapter to see which name appears.
+
+* Once logged in, run the following command to retrieve the IP address:
+
+  ```bash
+  ip a
+  ```
+
+### SSH
+
+The target ships with two possible Ethernet configurations:
+
+* **Fixed IP** : connect directly, the address is **10.0.0.10** :
+
+  ```bash
+  ssh your-user@10.0.0.10
+  ```
+
+* **DHCP** : connect via UART (see above) and run `ip a` to retrieve the IP address assigned by your DHCP server, then SSH to it.
+
+**For the future** if you want to connect the raspberry pi in wifi, you can refer to the [Network configuration](#-network-configuration) section.
+
+## 🧩 Target configuration
+
+This section explains how to provision the Raspberry Pi 5 with Ansible. It allows you to provide the essential files for setting up the Pyronear solution (Docker images: **pyro-engine** and **pyro-camera-api**).
+
+Then configure these two repo folders using their respective documentation :
+
+* [pi-manager-template](https://github.com/pyronear/pi-manager-template#setup)
+* [pi-manager-example](https://github.com/pyronear/pi-manager-example#step-2--configure-the-api-url-and-credentials) (It is not necessary to perform step 1 because the Yocto image already embeds the elements)
 
 ### 🤖 Ansible
 
 Once the environment is configured, we need to install all the essential elements for the operation of Pyronear's AI.
 
 * Create a folder for the Ansible configuration.
-  ```
+
+  ```bash
   mkdir Ansible-conf
   cd Ansible-conf
   ```
 
 * Install the "pi-manager-template" repo inside this Ansible configuration folder:
 
-  ```
+  ```bash
   git clone https://github.com/pyronear/pi-manager-template.git
   ```
+
 * Also install the "pi-manager-example" repo in this Ansible configuration folder:
 
-  ```
+  ```bash
   git clone https://github.com/pyronear/pi-manager-example.git
   ```
+
 * To configure Ansible, we must first place ourselves in a Python venv environment:
-  - We navigate to the same directory as the two folders we just cloned:
-  ```
+  * We navigate to the same directory as the two folders we just cloned:
+
+  ```bash
   python3 -m venv venv
   source venv/bin/activate
   ```
-
-
-Then configure these two repo folders using their respective documentation :
-* [pi-manager-template](https://github.com/pyronear/pi-manager-template)
-* [pi-manager-example](https://github.com/pyronear/pi-manager-example)
-
 
 ## ▶️ Provisioning
 
@@ -181,61 +230,135 @@ We will now launch the Ansible configured previously.
 * Verify that we are in the Python virtual environment:
 
 * Go to the "pi-manager-template" folder
+
   ```bash
   cd pi-manager-template
   ```
 
 * Launch the following command to set up docker:
+
   ```bash
   make ansible-up
   ```
 
 * Deploy Ansible on the Raspberry Pi(s) with:
-  ```
+
+  ```bash
   make deploy-all-engines
+  ```
+
+## 🛠️ Test
+
+Once provisioning is complete, Ansible has installed all the configuration on the target and pulled the `pyro-engine` Docker image. The system then reboots.
+
+* Reconnect via SSH, either with the fixed IP or the DHCP-assigned IP (see [Debug connection](#-debug-connection)).
+* Run this command in the Pi 5 terminal to check that everything is working properly:
+
+  ```bash
+  docker logs -f engine
   ```
 
 ## 🔄 OS Update
 
+The system uses a symmetric A/B rootfs scheme managed by RAUC: an update is installed on the currently inactive slot while the other one keeps running, then the device boots on the newly updated slot, which makes rollback straightforward if something goes wrong.
+
+### 🔑 Keys generation
+
+* In the first step, you need to generate a certification authority (CA) and the associated key pairs. To do this, use the RAUC key generation script:
+
+  ```bash
+  ./bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/layers/meta-rauc/scripts/openssl-ca.sh
+  ```
+
+* Copy the keyring file `ca.cert.pem` into the folder `credentials/rauc` at the root of the project, renaming it to `rauc-ca.cert.pem`:
+
+  ```bash
+  cp ./openssl-ca/dev/ca.cert.pem ./credentials/rauc/rauc-ca.cert.pem
+  ```
+
+* Copy the key file `development-1.key.pem` and the cert file `development-1.cert.pem` into the folder `credentials/rauc` at the root of the project, renaming them to `rauc.key.pem` and `rauc.cert.pem`:
+
+  ```bash
+  cp ./openssl-ca/dev/private/development-1.key.pem ./credentials/rauc/rauc.key.pem
+  cp ./openssl-ca/dev/development-1.cert.pem ./credentials/rauc/rauc.cert.pem
+  ```
+
+* At this point, `credentials/rauc` should contain exactly these three files:
+
+  ```bash
+  $ ls credentials/rauc/
+  rauc-ca.cert.pem  rauc.cert.pem  rauc.key.pem
+  ```
+
+* Once these files have been copied, you can safely delete the `openssl-ca` folder generated by the script.
+
+`rauc-ca.cert.pem`, `rauc.cert.pem` and `rauc.key.pem` are the filenames expected by default by the Yocto layer. If you need to use different key pairs (e.g. per-environment), you have two options, both set in `local-layers/meta-pyronear/conf/layer.conf`:
+
+* Copy your own certificates into the `credentials/rauc` folder at the root of the project, or point `RAUC_CREDENTIALS_DIR` (or `CREDENTIALS_DIR`) to a different folder - this moves the whole set of certificates (`rauc-ca.cert.pem`, `rauc.cert.pem`, `rauc.key.pem`) at once:
+
+  ```bash
+  CREDENTIALS_DIR := "/path/to/your/certificates"
+  RAUC_CREDENTIALS_DIR := "${CREDENTIALS_DIR}/rauc"
+  ```
+
+* Or override `RAUC_CERT_FILE`, `RAUC_KEY_FILE` and/or `RAUC_CA_FILE` directly if you only need to change one filename without moving the others. `RAUC_CERT_FILE`/`RAUC_KEY_FILE` take a full path, while `RAUC_CA_FILE` is just a filename, looked up inside `RAUC_CREDENTIALS_DIR`:
+
+  ```bash
+  RAUC_CERT_FILE := "${RAUC_CREDENTIALS_DIR}/my-other-cert.pem"
+  RAUC_KEY_FILE := "${RAUC_CREDENTIALS_DIR}/my-other-key.pem"
+  RAUC_CA_FILE := "my-other-ca.cert.pem"
+  ```
+
+### 🚀 System Update
+
 The OS update process consists of two steps:
 
 * Build the RAUC bundle
-
 * Manual update or using Ansible
 
-**Build RAUC bundle image :**
+#### **Build RAUC bundle image :**
 
 * Build the ```.raucb``` image using the following command:
-```bash
-# Production image
-bitbake pyronear-bundle-prod
 
-# Development image
-bitbake pyronear-bundle-dev
-```
+  ```bash
+  # Production image
+  bitbake pyronear-bundle-prod
 
-**Manual update :**
+  # Development image
+  bitbake pyronear-bundle-dev
+  ```
+
+#### **Manual update :**
+
+* Go to the deploy folder:
+
+  ```bash
+  cd bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/build/tmp/deploy/images/pyronear-rpi5/
+  ```
 
 * Copy via scp the bundle image file (```.raucb```) :
 
   ```bash
   # bundle dev
-  scp tmp/deploy/images/pyronear-rpi5/pyronear-bundle-dev-pyronear-rpi5.raucb your-user@X.X.X.X:/tmp/
+  scp pyronear-bundle-dev-pyronear-rpi5.raucb your-user@X.X.X.X:/tmp/
   ```
+
   ```bash
   # bundle prod
-  scp tmp/deploy/images/pyronear-rpi5/pyronear-bundle-prod-pyronear-rpi5.raucb your-user@X.X.X.X:/tmp/
+  scp pyronear-bundle-prod-pyronear-rpi5.raucb your-user@X.X.X.X:/tmp/
   ```
 
 * Connect to the Pi 5 via SSH
 
 * Run the update command:
-```bash
-rauc install /tmp/pyronear-bundle-*.raucb
-```
+
+  ```bash
+  rauc install /tmp/pyronear-bundle-*.raucb
+  ```
 
 If everything goes well, you should see the following message:
-```
+
+```bash
 installing
   0% Installing
   0% Determining slot states
@@ -271,68 +394,84 @@ installing
  99% Updating slots done.
 100% Installing done.
 Installing `/tmp/pyronear-bundle-prod-pyronear-rpi5.raucb` succeeded
-```
+  ```
 
 To finish, you just need to restart the Raspberry Pi 5 in order to boot on the new image.
 
-**Using Ansible :**
-For the update process using Ansible, you will need the previously presented github repo : [pi-manager-template](https://github.com/pyronear/pi-manager-template)
+* Once rebooted, check that the update was successful:
 
-* Copy the bundle image file (```.raucb```) in the folder ``bundles`` of ``pi-manager-template`` by renaming it to "```pyronear-bundle-pyronear-rpi5.raucb```"
-
-* Start the docker as explained in the **Provisioning** section
-
-* Run the update command:
-```bash
-make update-os
-```
-
-## ⚠️ RAUC note
-
-You will find in this section some useful commands to manage RAUC :
-
-* **Check RAUC status** (it's very useful after an update to verify if the update was successful):
   ```bash
   rauc status
   ```
-  Here is an example of what you should see if the update was successful:
+
+  Here is an example of what you should see if the update was successful. Notice that the system has booted from rootfs.1 (B), the slot that was just updated.
 
   ```bash
   === System Info ===
   Compatible:  pyronear-rpi5
   Variant:     
-  Booted from: rootfs.0 (A)
+  Booted from: rootfs.1 (B)
 
   === Bootloader ===
-  Activated: rootfs.0 (A)
+  Activated: rootfs.1 (B)
 
   === Slot States ===
-  o [rootfs.1] (/dev/disk/by-partlabel/rootfsB, ext4, inactive)
+  x [rootfs.1] (/dev/disk/by-partlabel/rootfsB, ext4, booted)
       bootname: B
       boot status: good
 
-  x [rootfs.0] (/dev/disk/by-partlabel/rootfsA, ext4, booted)
+  o [rootfs.0] (/dev/disk/by-partlabel/rootfsA, ext4, inactive)
       bootname: A
       boot status: good
-
   ```
 
-* **In case you want to roll back to the previous update:**
+#### **Using Ansible :**
+
+For the update process using Ansible, you will need the previously presented github repo : [pi-manager-template](https://github.com/pyronear/pi-manager-template)
+
+* Copy the bundle image file (```.raucb```) in the folder ``bundles`` of ``pi-manager-template`` by renaming it to "```pyronear-bundle-pyronear-rpi5.raucb```"
+
+* Start the docker as explained in the [Provisioning](#️-provisioning) section
+
+* Run the update command:
+
   ```bash
-  # You must replace "X" by the number of the targeted slot.
-  rauc status mark.active rootfs.X
-  ```
-  In this case, it is recommended to restart the Raspberry Pi 5 in order to boot on the previous image.
-
-  ```bash
-  reboot
+  make update-os
   ```
 
-## ⚠️ UART note:
+## 🔧 Advanced configuration
+
+### ⚙️ Pi user login and password
+
+A default password is set for the pi user of the Yocto image, corresponding to the base password used on Pyronear equipment.
+
+It is stored as a SHA-512 hash (the `PASSWD` variable) in `local-layers/meta-pyronear/recipes-core/users/user-pi.bb`.
+
+**In case you want to change the password of the pi user**
+
+The configuration of the pi user is done :
+
+* In the file: `local-layers/meta-pyronear/recipes-core/users/user-pi.bb`
+
+  1. Generate the hash of the new password:
+
+     ```bash
+     openssl passwd -6 "YourPassword"
+     ```
+
+  2. Place the obtained hash in the variable:
+
+     ```file
+     PASSWD = "[HASH_OF_YOUR_NEW_PASSWORD]"
+     ```
+
+* In the Pyronear Ansible: Follow the instructions in [Password Configuration](https://github.com/pyronear/pi-manager-example#c-camera--pi-credentials--vault-files-this-repo)
+
+### 📟 UART
 
 In the machine configuration file "```pyronear-rpi5.conf```", you can choose the serial port to use for debugging:
 
-```
+```file
 # Enable serial port for debugging and communication
 # Choice of console UART:
 # - ENABLE_UART_UART0 = "1" : console on GPIO14/15 (RP1 uart0, via the uart0-pi5 overlay).
@@ -347,10 +486,33 @@ In the machine configuration file "```pyronear-rpi5.conf```", you can choose the
 * If you don't have the adapter cable for the J16 port, use the GPIO ports (14/15) by setting ```ENABLE_UART_UART0 = "1"```.
   However, note that the kernel console will be available, but not U-Boot.
 
-## 🛠️ Test
+### 📡 Network configuration
 
-Run this command in the Pi 5 terminal to check that everything is working properly :
+* **WiFi** :
+
+  To get the list of available WiFi networks, use the following command:
+
+  ```bash
+  nmcli dev wifi list
+  ```
+
+  Then use the `nmcli` command to configure the WiFi. You just need to replace `YourWiFiNetworkName` and `YourPassword` with your WiFi network information.
+
+  ```bash
+  nmcli dev wifi connect "YourWiFiNetworkName" password "YourPassword" 
+  ```
+
+## ⚠️ RAUC note
+
+If an update turns out to be faulty, you can roll back to the previous slot:
 
 ```bash
-docker logs -f engine
+# You must replace "X" by the number of the targeted slot.
+rauc status mark-active rootfs.X
+```
+
+It is then recommended to restart the Raspberry Pi 5 in order to boot on the previous image.
+
+```bash
+reboot
 ```
