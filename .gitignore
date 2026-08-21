@@ -2,9 +2,7 @@
 credentials.json
 /bitbake
 /bitbake-builds
-ca.cert.pem
-development-1.cert.pem
-development-1.key.pem
+/credentials/
 
 *~
 *.swp
