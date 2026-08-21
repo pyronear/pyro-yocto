@@ -1,4 +1,6 @@
-inherit core-image 
+inherit core-image
+
+LICENSE = "Apache-2.0"
 
 # =========================================================================
 # 1. IMAGE FORMAT AND FEATURES
@@ -21,8 +23,6 @@ IMAGE_FEATURES += " \
 # =========================================================================
 # Yocto includes automatically 'packagegroup-core-boot', we add the rest
 IMAGE_INSTALL += " \
-    net-tools \
-    zram \
     expand-data \
 "
 
@@ -52,8 +52,6 @@ IMAGE_INSTALL += " \
 "
 
 IMAGE_INSTALL:append = " rauc"
-
-IMAGE_INSTALL:append = " kernel-image kernel-devicetree"
 
 IMAGE_BOOT_FILES:append = " boot.scr"
 
