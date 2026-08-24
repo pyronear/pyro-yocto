@@ -1,5 +1,8 @@
-require pyronear-image.inc
 SUMMARY = "Pyronear Development Image"
+DESCRIPTION = "Development image for PyroNear."
+LICENSE = "Apache-2.0"
+
+require pyronear-image.inc
 
 # Enable rootfs access without password for debug
 IMAGE_FEATURES += " \
