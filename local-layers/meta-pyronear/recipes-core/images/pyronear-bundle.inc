@@ -26,6 +26,5 @@ RAUC_BUNDLE_FORMAT = "plain"
 RAUC_BUNDLE_SLOTS = "rootfs"
 RAUC_SLOT_rootfs[fstype] = "ext4"
 
-RAUC_CERT_FILE = "${RAUC_CREDENTIALS_DIR}/development-1.cert.pem"
-RAUC_KEY_FILE = "${RAUC_CREDENTIALS_DIR}/development-1.key.pem"
+# RAUC_CERT_FILE / RAUC_KEY_FILE are defined in meta-pyronear's layer.conf
 

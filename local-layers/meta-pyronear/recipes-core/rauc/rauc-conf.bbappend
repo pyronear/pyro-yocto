@@ -3,7 +3,7 @@ FILESEXTRAPATHS:prepend := "${RAUC_CREDENTIALS_DIR}:"
 
 SRC_URI:append = " \
     file://system.conf \
-    file://ca.cert.pem \
+    file://${RAUC_CA_FILE} \
 "
 
 do_install() {
@@ -11,7 +11,7 @@ do_install() {
     install -m 0644 ${UNPACKDIR}/system.conf ${D}${nonarch_libdir}/rauc/system.conf
 
     install -d ${D}${sysconfdir}/rauc
-    install -m 0644 ${UNPACKDIR}/ca.cert.pem ${D}${sysconfdir}/rauc/ca.cert.pem
+    install -m 0644 ${UNPACKDIR}/${RAUC_CA_FILE} ${D}${sysconfdir}/rauc/ca.cert.pem
 }
 
 FILES:${PN} += " \
