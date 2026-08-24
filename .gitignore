@@ -2,7 +2,9 @@
 credentials.json
 /bitbake
 /bitbake-builds
-/credentials/
+/credentials/*
+!/credentials/rauc/
+/openssl-ca/
 
 *~
 *.swp
