@@ -25,9 +25,16 @@
         "meta-raspberrypi": {
             "git-remote": {
                 "uri": "https://git.yoctoproject.org/meta-raspberrypi",
-                "rev": "master"
+                "rev": "wrynose"
             },
             "path": "meta-raspberrypi"
+        },
+        "meta-rauc": {
+            "git-remote": {
+                "uri": "https://github.com/rauc/meta-rauc.git",
+                "rev": "wrynose"
+            },
+            "path": "meta-rauc"
         },
         "meta-virtualization": {
             "git-remote": {
@@ -55,6 +62,7 @@
                     "meta-yocto/meta-poky",
                     "meta-yocto/meta-yocto-bsp",
                     "meta-raspberrypi",
+                    "meta-rauc",
                     "meta-openembedded/meta-python",
                     "meta-openembedded/meta-networking",
                     "meta-openembedded/meta-multimedia",

@@ -1,9 +1,11 @@
-inherit core-image 
+inherit core-image
+
+LICENSE = "Apache-2.0"
 
 # =========================================================================
 # 1. IMAGE FORMAT AND FEATURES
 # =========================================================================
-IMAGE_FSTYPES = "wic.bz2 wic.bmap"
+IMAGE_FSTYPES = "wic.bz2 wic.bmap ext4 tar.bz2"
 
 # Core features configuration
 IMAGE_FEATURES += " \
@@ -16,22 +18,11 @@ IMAGE_FEATURES += " \
     overlayfs-etc \
 "
 
-# Enable rootfs access without password for debug
-IMAGE_FEATURES += " \
-    allow-empty-password \
-    empty-root-password \
-    allow-root-login \
-"
-
-
 # =========================================================================
 # 2. SOFTWARE TO INSTALL
 # =========================================================================
 # Yocto includes automatically 'packagegroup-core-boot', we add the rest
 IMAGE_INSTALL += " \
-    net-tools \
-    nano \
-    zram \
     expand-data \
 "
 
@@ -49,6 +40,7 @@ IMAGE_INSTALL += " \
     git \
     openvpn \
     ca-certificates \
+    curl \
     python3 \
     python3-docker \
     cronie \
@@ -59,5 +51,11 @@ IMAGE_INSTALL += " \
     pyro-setup \
 "
 
+IMAGE_INSTALL:append = " rauc"
+
+IMAGE_BOOT_FILES:append = " boot.scr"
+
 # Use a custom wic file for hardware partitioning
 WKS_FILE = "pyronear-raspberrypi.wks.in"
+
+WIC_CREATE_EXTRA_ARGS += " --no-fstab-update"
