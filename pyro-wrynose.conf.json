@@ -4,58 +4,58 @@
         "bitbake": {
             "git-remote": {
                 "uri": "https://git.openembedded.org/bitbake",
-                "rev": "master"
+                "rev": "yocto-6.0.2"
             },
             "path": "bitbake"
         },
         "openembedded-core": {
             "git-remote": {
                 "uri": "https://git.openembedded.org/openembedded-core",
-                "rev": "wrynose"
+                "rev": "yocto-6.0.2"
             },
             "path": "openembedded-core"
+        },
+        "meta-yocto": {
+            "git-remote": {
+                "uri": "https://git.yoctoproject.org/meta-yocto",
+                "rev": "yocto-6.0.2"
+            },
+            "path": "meta-yocto"
         },
         "meta-openembedded": {
             "git-remote": {
                 "uri": "https://git.openembedded.org/meta-openembedded",
-                "rev": "wrynose"
+                "rev": "6bf0d8ad57b33950bab4c7f6c037e1ccb6f6e2eb"
             },
             "path": "meta-openembedded"
         },
         "meta-raspberrypi": {
             "git-remote": {
                 "uri": "https://git.yoctoproject.org/meta-raspberrypi",
-                "rev": "wrynose"
+                "rev": "f62c67921474370829d24a4fa01ef88543f3906b"
             },
             "path": "meta-raspberrypi"
         },
         "meta-rauc": {
             "git-remote": {
                 "uri": "https://github.com/rauc/meta-rauc.git",
-                "rev": "wrynose"
+                "rev": "38da0e5866a953e664001ba90b5edad68d68cd5d"
             },
             "path": "meta-rauc"
         },
         "meta-virtualization": {
             "git-remote": {
                 "uri": "https://git.yoctoproject.org/meta-virtualization",
-                "rev": "wrynose"
+                "rev": "aab9c1a0dd6b48776c9f372a32c32486c560b9c9"
             },
             "path": "meta-virtualization"
-        },
-        "meta-yocto": {
-            "git-remote": {
-                "uri": "https://git.yoctoproject.org/meta-yocto",
-                "rev": "wrynose"
-            },
-            "path": "meta-yocto"
         }
     },
     "bitbake-setup": {
         "configurations": [
             {
-                "name": "Pyro conf for rpi5",
-                "description": "Configure the build for rpi5",
+                "name": "pyro-rpi5",
+                "description": "Configure the build for the pyronear-rpi5 machine",
                 "bb-layers": [
                     "openembedded-core/meta",
                     "meta-openembedded/meta-oe",
