@@ -1,0 +1,60 @@
+FROM ubuntu:26.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+USER root
+
+# Update packages list
+RUN apt-get update
+
+# Yocto Project required packages for the build host
+# https://docs.yoctoproject.org/ref-manual/system-requirements.html
+RUN apt-get install -y \
+    build-essential \
+    chrpath \
+    cpio \
+    debianutils \
+    diffstat \
+    file \
+    gawk \
+    gcc \
+    git \
+    iputils-ping \
+    libacl1 \
+    libcrypt-dev \
+    locales \
+    python3 \
+    python3-git \
+    python3-jinja2 \
+    python3-pexpect \
+    python3-pip \
+    python3-subunit \
+    python3-venv \
+    socat \
+    texinfo \
+    unzip \
+    wget \
+    xz-utils \
+    zstd
+
+# bitbake requires the en_US.UTF-8 locale to be available
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+
+# Ubuntu's system python3 is externally-managed, so pip3 refuses
+# to install packages into it directly. Use a venv instead, put on PATH so
+# it's picked up transparently by "python3"/"pip3" everywhere.
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+
+# Install bitbake setup to init env
+RUN pip3 install bitbake-setup
+
+# bitbake's sanity checker refuses to run as root; switch to a regular user
+# for the rest of the container's life (matches crops/poky's "pokyuser").
+RUN useradd -m -s /bin/bash pokyuser
+USER pokyuser
+
+RUN ["/bin/bash"]
