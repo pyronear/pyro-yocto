@@ -54,8 +54,8 @@
     "bitbake-setup": {
         "configurations": [
             {
-                "name": "Pyro conf for rpi5",
-                "description": "Configure the build for rpi5",
+                "name": "pyro-rpi5",
+                "description": "Configure the build for the pyronear-rpi5 machine",
                 "bb-layers": [
                     "openembedded-core/meta",
                     "meta-openembedded/meta-oe",
