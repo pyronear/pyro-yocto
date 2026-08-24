@@ -11,71 +11,71 @@ This repository is the manual for building, flashing, provisioning, and updating
 
 ### Hardware
 
+#### Host
+
+Follow Yocto's official [system requirements](https://docs.yoctoproject.org/ref-manual/system-requirements.html):
+
+* At least 140 GB of free disk space (more for complex images, running multiple builds, or caching build artifacts)
+* As much RAM and as many CPU cores as possible (builds can technically run with 32 GB of RAM on a 4-core machine, but will be much faster with more)
+
+#### Target
+
 * You will need a Raspberry Pi 5 (minimum 2 GB RAM)
 * You will need a micro SD card (minimum 4 GB)
 
 ### Development environment
 
-We will use the "Wrynose" version of Yocto.
+We will use the "Wrynose" version of Yocto. The whole Yocto/BitBake toolchain (including `bitbake-setup`) runs inside a Docker container, so you don't need to install any of it on your host.
 
-* Install the prerequisites for installing Yocto:
+* Install Docker on your host machine: see the [official instructions](https://docs.docker.com/engine/install/).
 
-  ```bash
-  sudo apt update
-  sudo apt install build-essential chrpath cpio debianutils diffstat file gawk gcc git iputils-ping libacl1 liblz4-tool locales python3 python3-git python3-jinja2 python3-pexpect python3-pip python3-subunit socat texinfo unzip wget xz-utils zstd
-  ```
-
-* If you haven't installed bmaptool:
+* Install bmaptool on your host machine. This one runs on the host, not in the container, since you will use it later to flash the microSD card directly from your PC:
 
   ```bash
   sudo apt install bmap-tools
   ```
 
-* Create a python virtual environment at the root of the project and install the `bitbake` utility in the virtual environment :
+* Start the container:
 
   ```bash
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install bitbake-setup
+  ./start-docker.sh
   ```
 
-  Keep this virtual environment activated: you will need it in the next section to run `bitbake-setup`.
+  This builds the image if needed (see `support/docker/dockerfile`) and opens a shell inside it. The project's root folder is bind-mounted at the exact same path inside the container as on your host, so every path shown in this README, in build logs, or in error messages is identical whether a command runs on the host or inside the container.
+
+  You will see a prompt like `I have no name!@<container-id>:/...`: this is expected. The container runs with your host's user and group IDs (`--user "$(id -u):$(id -g)"`) so that files created inside it keep your host ownership, but that ID has no matching entry in the container's `/etc/passwd`, hence the generic prompt. It does not affect anything.
 
 ## 💻 Build the image
+
+**All the commands in this chapter run inside the Docker container opened by `./start-docker.sh`.**
 
 ### Setup the Yocto Build Environment
 
 The project uses the official `bitbake-setup` tool (introduced in Yocto 5.3+) to automate the environment initialization using the `yocto-pyro.conf.json` file.
 
-1. Run the initialization command:
+Run the initialization command:
 
-   ```bash
-   bitbake-setup init yocto-pyro.conf.json
-   ```
+```bash
+bitbake-setup init yocto-pyro.conf.json
+```
 
-   When prompted, answer the questions as follows:
+When prompted, answer the questions as follows:
 
-   ```bash
-   A common site.conf file will be created, please check it is correct before running builds
-   ...
+```bash
+A common site.conf file will be created, please check it is correct before running builds
+...
 
-   Proceed? (y/N): y
+Proceed? (y/N): y
 
-   # Press only the "Enter" key without entering a specific name for the setup directory (the default name will be "yocto-pyro-Pyro-conf-for-rpi5")
-   Enter setup directory name [yocto-pyro-Pyro-conf-for-rpi5]:
-   
-   Initializing a setup directory in
-   ...
-   Continue? (y/N): y
-   ```
+# Press only the "Enter" key without entering a specific name for the setup directory (the default name will be "yocto-pyro-Pyro-conf-for-rpi5")
+Enter setup directory name [yocto-pyro-Pyro-conf-for-rpi5]:
 
-2. You can now exit the Python virtual environment:
+Initializing a setup directory in
+...
+Continue? (y/N): y
+```
 
-   ```bash
-   deactivate
-   ```
-
-> **Note:** If you use VS Code, you can skip the above and instead open the project root folder, install the official **Yocto Project BitBake** extension, and let it detect `yocto-pyro.conf.json` - it will prompt you to initialize/configure the environment. Select the configuration named **"Pyro conf for rpi5"**.
+This initialization only needs to be done once. For every subsequent session, you only need to source the build environment, as shown in the next section.
 
 ### Build the pyronear-image
 
@@ -93,7 +93,7 @@ Start the compilation of the `pyronear-image` custom image:
     bitbake pyronear-image-prod
     ```
 
-* **Dev image**:  Contains development and debugging tools:
+* **Development image**:  Contains development and debugging tools:
   * rootfs access without a password
   * nano
   * htop
@@ -105,6 +105,8 @@ Start the compilation of the `pyronear-image` custom image:
   **It is recommended to start by creating the image in dev mode in order to carry out the system configuration more efficiently thanks to the user "root" without password**
 
 ## 💾 Flash the microSD card
+
+**This step runs on your host, not inside the container**: exit the container shell (or open a new terminal on your host) so that `bmaptool` has direct access to the microSD card device. The build outputs are visible either way, since the project's root folder is bind-mounted at the same path on the host and in the container.
 
 * Insert the micro SD card into your computer.
 * Note down the path to your microSD card (e.g. /dev/sdb or /dev/mmcblk0) to avoid any write errors :
