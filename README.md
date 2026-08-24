@@ -51,12 +51,12 @@ We will use the "Wrynose" version of Yocto. The whole Yocto/BitBake toolchain (i
 
 ### Setup the Yocto Build Environment
 
-The project uses the official `bitbake-setup` tool (introduced in Yocto 5.3+) to automate the environment initialization using the `yocto-pyro.conf.json` file.
+The project uses the official `bitbake-setup` tool (introduced in Yocto 5.3+) to automate the environment initialization using the `pyro-wrynose.conf.json` file.
 
 Run the initialization command:
 
 ```bash
-bitbake-setup init yocto-pyro.conf.json
+bitbake-setup init pyro-wrynose.conf.json
 ```
 
 When prompted, answer the questions as follows:
@@ -67,8 +67,8 @@ A common site.conf file will be created, please check it is correct before runni
 
 Proceed? (y/N): y
 
-# Press only the "Enter" key without entering a specific name for the setup directory (the default name will be "yocto-pyro-Pyro-conf-for-rpi5")
-Enter setup directory name [yocto-pyro-Pyro-conf-for-rpi5]:
+# Press only the "Enter" key without entering a specific name for the setup directory (the default name will be "pyro-wrynose-pyro-rpi5")
+Enter setup directory name [pyro-wrynose-pyro-rpi5]:
 
 Initializing a setup directory in
 ...
@@ -82,7 +82,7 @@ This initialization only needs to be done once. For every subsequent session, yo
 * Source the Yocto/BitBake build environment:
 
   ```bash
-  source bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/build/init-build-env
+  source bitbake-builds/pyro-wrynose-pyro-rpi5/build/init-build-env
   ```
 
 Start the compilation of the `pyronear-image` custom image:
@@ -119,7 +119,7 @@ Start the compilation of the `pyronear-image` custom image:
 * Go to the deploy folder:
 
   ```bash
-  cd bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/build/tmp/deploy/images/pyronear-rpi5/
+  cd bitbake-builds/pyro-wrynose-pyro-rpi5/build/tmp/deploy/images/pyronear-rpi5/
   ```
 
 * Run the following command (replace `/dev/location_microSD` with your microSD card device, e.g., `/dev/sdb` or `/dev/mmcblk0`):
@@ -269,7 +269,7 @@ The system uses a symmetric A/B rootfs scheme managed by RAUC: an update is inst
 * In the first step, you need to generate a certification authority (CA) and the associated key pairs. To do this, use the RAUC key generation script:
 
   ```bash
-  ./bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/layers/meta-rauc/scripts/openssl-ca.sh
+  ./bitbake-builds/pyro-wrynose-pyro-rpi5/layers/meta-rauc/scripts/openssl-ca.sh
   ```
 
 * Copy the keyring file `ca.cert.pem` into the folder `credentials/rauc` at the root of the project, renaming it to `rauc-ca.cert.pem`:
@@ -335,7 +335,7 @@ The OS update process consists of two steps:
 * Go to the deploy folder:
 
   ```bash
-  cd bitbake-builds/yocto-pyro-Pyro-conf-for-rpi5/build/tmp/deploy/images/pyronear-rpi5/
+  cd bitbake-builds/pyro-wrynose-pyro-rpi5/build/tmp/deploy/images/pyronear-rpi5/
   ```
 
 * Copy via scp the bundle image file (```.raucb```) :
