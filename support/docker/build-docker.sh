@@ -11,4 +11,4 @@ DOCKERFILE_PATH="${SCRIPT_DIR}/dockerfile"
 
 # build docker image
 echo "building docker image '${IMAGE_NAME}' ..."
-docker build -t "${IMAGE_NAME}" -f "${DOCKERFILE_PATH}" .
+docker build -t "${IMAGE_NAME}" -f "${DOCKERFILE_PATH}" "${SCRIPT_DIR}"
