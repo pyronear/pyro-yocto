@@ -518,3 +518,23 @@ It is then recommended to restart the Raspberry Pi 5 in order to boot on the pre
 ```bash
 reboot
 ```
+
+## 🧯 Troubleshooting
+
+### Git fetch blocked
+
+Some recipes fetch over plain `git://` (port 9418), which is blocked on many company/ISP networks. `libnftnl` and `yocto-cfg-fragments` are known to hit this, and the build fails with a fetch/network error.
+
+**Inside the Docker container, with the build environment sourced** (see [Build the pyronear-image](#build-the-pyronear-image)), enable the `git-https-premirrors` fragment to redirect just those known recipes to `https://` instead:
+
+```bash
+bitbake-config-build enable-fragment meta-pyronear/git-https-premirrors
+```
+
+Run `bitbake-config-build list-fragments` to see all available fragments (enabled and disabled).
+
+If another recipe hits the same `git://` block, add a new entry to `local-layers/meta-pyronear/conf/fragments/git-https-premirrors.conf`, scoped to that recipe only:
+
+```bash
+PREMIRRORS:prepend:pn-<recipe-name> = "git://<host>/<path>$ git://<host>/<path>;protocol=https \n"
+```
