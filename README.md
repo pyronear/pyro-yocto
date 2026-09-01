@@ -431,7 +431,7 @@ To finish, you just need to restart the Raspberry Pi 5 in order to boot on the n
 
 For the update process using Ansible, you will need the previously presented github repo : [pi-manager-template](https://github.com/pyronear/pi-manager-template)
 
-* Copy the bundle image file (```.raucb```) in the folder ``bundles`` of ``pi-manager-template`` by renaming it to "```pyronear-bundle-pyronear-rpi5.raucb```"
+* Copy the bundle image file (`.raucb`) in the folder `bundles` of `pi-manager-example` (**sister repo**) by renaming it to "`pyronear-bundle-rpi5.raucb`"
 
 * Start the docker as explained in the [Provisioning](#️-provisioning) section
 

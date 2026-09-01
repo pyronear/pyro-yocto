@@ -3,10 +3,8 @@ inherit core-image
 LICENSE = "Apache-2.0"
 
 # =========================================================================
-# 1. IMAGE FORMAT AND FEATURES
+# IMAGE FEATURES
 # =========================================================================
-IMAGE_FSTYPES = "wic.bz2 wic.bmap ext4 tar.bz2"
-
 # Core features configuration
 IMAGE_FEATURES += " \
     ssh-server-dropbear \
@@ -19,9 +17,14 @@ IMAGE_FEATURES += " \
 "
 
 # =========================================================================
-# 2. SOFTWARE TO INSTALL
+# CORE-IMAGE CONFIGURATION
 # =========================================================================
-# Yocto includes automatically 'packagegroup-core-boot', we add the rest
+# Force only minimal packages
+CORE_IMAGE_BASE_INSTALL = "packagegroup-core-boot packagegroup-base"
+
+# =========================================================================
+# SOFTWARES TO INSTALL
+# =========================================================================
 IMAGE_INSTALL += " \
     expand-data \
 "
@@ -35,7 +38,7 @@ IMAGE_INSTALL += " \
     networkmanager-nmcli \
 "
 
-# For Ansible deployment :
+# For Ansible deployment
 IMAGE_INSTALL += " \
     git \
     openvpn \
@@ -46,16 +49,22 @@ IMAGE_INSTALL += " \
     cronie \
     user-pi \
 "
+
 # Pyro-setup
 IMAGE_INSTALL += " \
     pyro-setup \
 "
 
-IMAGE_INSTALL:append = " rauc"
+# Update
+IMAGE_INSTALL += " \
+    rauc \
+"
 
-IMAGE_BOOT_FILES:append = " boot.scr"
+# =========================================================================
+# IMAGE FORMAT AND MEMORY LAYOUT
+# =========================================================================
+IMAGE_FSTYPES = "wic.bz2 wic.bmap ext4 tar.bz2"
 
 # Use a custom wic file for hardware partitioning
 WKS_FILE = "pyronear-raspberrypi.wks.in"
-
 WIC_CREATE_EXTRA_ARGS += " --no-fstab-update"
