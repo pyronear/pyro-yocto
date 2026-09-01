@@ -7,13 +7,25 @@ This repository is the manual for building, flashing, provisioning, and updating
 * Provisioning the Raspberry Pi 5 with Ansible (network, credentials, Docker services)
 * Building and deploying RAUC OTA update bundles, and managing OS updates
 
+## 🧭 How it works
+
+* Your PC builds the full OS image with Yocto, inside a Docker container, then you flash it onto a microSD card.
+* The card holds two rootfs slots (A and B) plus a persistent `/data` partition: an OS update is installed on the inactive slot while the other keeps running, and `/data` survives across updates and slot switches.
+* Yocto builds the OS (kernel, system services, base packages), while Ansible installs the application layer (Docker services, credentials, configuration) once the device has booted.
+
+```mermaid
+flowchart LR
+    YOCTO["Yocto build"] --> SD["Flash SD card"] --> RPI["Raspberry Pi 5"]
+    ANSIBLE["Ansible"] --> APP["Docker services<br/>(pyro-engine, pyro-camera-api)"] --> RPI
+```
+
 ## ✅ Prerequisites
 
 ### Hardware
 
 #### Host
 
-Follow Yocto's official [system requirements](https://docs.yoctoproject.org/ref-manual/system-requirements.html):
+A Linux PC with:
 
 * At least 140 GB of free disk space (more for complex images, running multiple builds, or caching build artifacts)
 * As much RAM and as many CPU cores as possible (builds can technically run with 32 GB of RAM on a 4-core machine, but will be much faster with more)
@@ -21,7 +33,7 @@ Follow Yocto's official [system requirements](https://docs.yoctoproject.org/ref-
 #### Target
 
 * You will need a Raspberry Pi 5 (minimum 2 GB RAM)
-* You will need a micro SD card (minimum 4 GB)
+* You will need a micro SD card, 16 GB or larger recommended (4 GB is only the technical minimum)
 
 ### Development environment
 
@@ -93,16 +105,13 @@ Start the compilation of the `pyronear-image` custom image:
     bitbake pyronear-image-prod
     ```
 
-* **Development image**:  Contains development and debugging tools:
-  * rootfs access without a password
-  * nano
-  * htop
+* **Development image**:  Contains development and debugging tools and rootfs access without a password:
 
     ```bash
     bitbake pyronear-image-dev
     ```
 
-  **It is recommended to start by creating the image in dev mode in order to carry out the system configuration more efficiently thanks to the user "root" without password**
+**The first build can take several hours and download tens of GB of sources and packages. If it gets interrupted, just re-run the same `bitbake` command: it resumes from where it left off.**
 
 ## 💾 Flash the microSD card
 
@@ -115,7 +124,12 @@ Start the compilation of the `pyronear-image` custom image:
   lsblk
   ```
 
-* Unmount the partitions on the microSD card.
+* Unmount the partitions on the microSD card (replace `/dev/location_microSD` with your device, e.g. `/dev/sdb` or `/dev/mmcblk0`):
+
+  ```bash
+  sudo umount [/dev/location_microSD]
+  ```
+
 * Go to the deploy folder:
 
   ```bash
@@ -142,11 +156,11 @@ Start the compilation of the `pyronear-image` custom image:
 
 **If you used prod mode during image creation, you will need to log in with the "pi" user. Information about the default password and how to change it is available in the [Pi user login and password](#️-pi-user-login-and-password) section.**
 
-**You can connect to the Raspberry Pi 5 via SSH or via the UART to finish configuring the system. To do this, please follow the steps in the [Debug connection](#-debug-connection) section.**
+**You can connect to the Raspberry Pi 5 via SSH or via the UART, please follow the steps in the [Debug connection](#-debug-connection) section.**
 
 ## 🔌 Debug connection
 
-You need access to your Raspberry Pi 5 to finish configuring it. For the first connection, it is recommended to use Ethernet.
+You can connect to the board via UART or SSH. Depending on the image you built, log in as `root` (dev image) or `pi` (dev and prod image).
 
 ### UART
 
@@ -257,7 +271,7 @@ Once provisioning is complete, Ansible has installed all the configuration on th
 * Run this command in the Pi 5 terminal to check that everything is working properly:
 
   ```bash
-  docker logs -f engine
+  sudo docker logs -f engine
   ```
 
 ## 🔄 OS Update
@@ -342,12 +356,12 @@ The OS update process consists of two steps:
 
   ```bash
   # bundle dev
-  scp pyronear-bundle-dev-pyronear-rpi5.raucb your-user@X.X.X.X:/tmp/
+  scp pyronear-bundle-dev-pyronear-rpi5.raucb pi@X.X.X.X:/tmp/
   ```
 
   ```bash
   # bundle prod
-  scp pyronear-bundle-prod-pyronear-rpi5.raucb your-user@X.X.X.X:/tmp/
+  scp pyronear-bundle-prod-pyronear-rpi5.raucb pi@X.X.X.X:/tmp/
   ```
 
 * Connect to the Pi 5 via SSH
@@ -355,7 +369,7 @@ The OS update process consists of two steps:
 * Run the update command:
 
   ```bash
-  rauc install /tmp/pyronear-bundle-*.raucb
+  sudo rauc install /tmp/pyronear-bundle-*.raucb
   ```
 
 If everything goes well, you should see the following message:
@@ -510,11 +524,11 @@ If an update turns out to be faulty, you can roll back to the previous slot:
 
 ```bash
 # You must replace "X" by the number of the targeted slot.
-rauc status mark-active rootfs.X
+sudo rauc status mark-active rootfs.X
 ```
 
 It is then recommended to restart the Raspberry Pi 5 in order to boot on the previous image.
 
 ```bash
-reboot
+sudo reboot
 ```
