@@ -16,8 +16,6 @@ source "${DOCKER_DIR}/image-info"
 echo "starting docker image ${IMAGE_NAME}..."
 docker run --rm -it \
     --user "$(id -u):$(id -g)" \
-    -v $(readlink -f $SSH_AUTH_SOCK):/ssh-agent -e SSH_AUTH_SOCK=/ssh-agent \
-    -v "${HOME}/.gitconfig:/etc/gitconfig" \
     -v "${PROJECT_PATH}:${PROJECT_PATH}" \
     -w "${PROJECT_PATH}" \
     "${IMAGE_NAME}"
