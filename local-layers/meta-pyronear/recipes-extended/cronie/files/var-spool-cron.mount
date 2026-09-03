@@ -1,0 +1,15 @@
+[Unit]
+Description=Persist cron spool on /data
+DefaultDependencies=no
+Requires=data.mount
+After=data.mount systemd-tmpfiles-setup.service var-volatile-spool.service
+Before=crond.service
+
+[Mount]
+What=/data/cron-spool
+Where=/var/spool/cron
+Type=none
+Options=bind
+
+[Install]
+WantedBy=multi-user.target
