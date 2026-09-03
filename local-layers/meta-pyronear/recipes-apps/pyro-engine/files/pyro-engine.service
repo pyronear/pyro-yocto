@@ -1,20 +1,19 @@
 [Unit]
 Description=PyroEngine Application Start
-After=docker.service network-online.target time-sync.target
-Wants=docker.service network-online.target time-sync.target
+After=docker.service network-online.target time-set.target
+Wants=docker.service network-online.target time-set.target
 
 # Docker compose file should exist
 ConditionPathExists=/data/home/engine/docker-compose.yml
 
 [Service]
 Type=simple
+Restart=on-failure
+RestartSec=5
 # Run as non-privileged 'engine' user for security hardening
 User=engine
 Group=engine
 WorkingDirectory=/data/home/engine
-
-# Verify network time synchronization (blocking start until system clock is updated)
-ExecStartPre=/bin/sh -c 'until [ $(date +%%s) -gt 1773416400 ]; do echo "Waiting for network time synchronization..."; sleep 1; done'
 
 # Main orchestration command: launch the containers
 ExecStart=/usr/bin/docker compose up
