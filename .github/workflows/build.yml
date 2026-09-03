@@ -1,0 +1,101 @@
+name: Build Yocto images and SWUpdate bundles
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_type:
+        description: "Yocto image variant to target"
+        required: false
+        default: prod
+        type: choice
+        options:
+          - dev
+          - prod
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      # Manual dispatch uses the dropdown; anything else (tag push, or the
+      # temporary branch push trigger) defaults to prod. Independent from
+      # `environment:` below: this picks what gets built, not which key
+      # signs it.
+      IMAGE_TYPE: ${{ inputs.image_type || 'prod' }}
+      # DEPLOY_DIR isn't composed from BUILD_ENV/MACHINE: an env: block isn't
+      # a shell, so $VAR/${VAR} in a value here is never substituted (that
+      # only works inside a run: step), and GitHub Actions doesn't reliably
+      # support one env: entry referencing another via ${{ env.X }} either.
+      BUILD_ENV: pyro-wrynose-pyro-rpi5
+      MACHINE: pyronear-rpi5
+      DEPLOY_DIR: ./bitbake-builds/pyro-wrynose-pyro-rpi5/build/tmp/deploy/images/pyronear-rpi5
+    # Which RAUC signing key this job gets, decided by the trigger, not by
+    # IMAGE_TYPE (see above, that's a separate axis: what gets built, not
+    # what signs it):
+    #   - Tag push (real release): environment = "cred-prod". Requires a
+    #     reviewer to approve the run before it starts, and exposes the
+    #     prod RAUC_CA_CERT_PEM/RAUC_CERT_PEM/RAUC_KEY_PEM secrets stored in
+    #     that environment.
+    #   - Anything else (manual dispatch, or the temporary branch push
+    #     trigger): environment = "" (none). Runs unattended, and falls back
+    #     to the dev RAUC_*_PEM secrets stored as plain repository secrets
+    #     (same 3 names).
+    # Same secret names in both places on purpose: when cred-prod is active,
+    # its secrets simply take priority over the repo-level ones
+    environment: ${{ github.ref_type == 'tag' && 'cred-prod' || '' }}
+    # Uses the image published by the "Build Yocto Environment Docker image"
+    # workflow, so the toolchain isn't rebuilt on every Yocto build run.
+    # Note: the `env` context isn't available for `container:`, so the image
+    # reference is spelled out here instead of reusing a workflow-level `env`.
+    container:
+      image: ghcr.io/${{ github.repository }}:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Dev keys (repo secrets) by default, or the prod ones if `environment:
+      # cred-prod` is active above, same secret names either way.
+      - name: Provision RAUC credentials
+        env:
+          RAUC_CA_CERT: ${{ secrets.RAUC_CA_CERT_PEM }}
+          RAUC_CERT: ${{ secrets.RAUC_CERT_PEM }}
+          RAUC_KEY: ${{ secrets.RAUC_KEY_PEM }}
+        run: |
+          mkdir -p credentials/rauc
+          printf '%s' "$RAUC_CA_CERT" > credentials/rauc/rauc-ca.cert.pem
+          printf '%s' "$RAUC_CERT" > credentials/rauc/rauc.cert.pem
+          printf '%s' "$RAUC_KEY" > credentials/rauc/rauc.key.pem
+          chmod 600 credentials/rauc/rauc.key.pem
+
+      - name: Setup Yocto build environment
+        run: bitbake-setup init --non-interactive --setup-dir-name $BUILD_ENV pyro-wrynose.conf.json
+
+      # A single step, since each `run:` is its own shell process: sourcing
+      # init-build-env (which sets up PATH and cd's into the build dir) in one
+      # step has no effect on the next one. Using "." instead of "source"
+      # since this container job's default shell is sh, not bash.
+      - name: Enable fragments and build the image and bundle
+        run: |
+          . ./bitbake-builds/${BUILD_ENV}/build/init-build-env
+          bitbake-config-build enable-fragment meta-pyronear/rm-work
+          bitbake-config-build enable-fragment core/yocto/sstate-mirror-cdn
+          bitbake pyronear-image-${IMAGE_TYPE}
+          bitbake pyronear-bundle-${IMAGE_TYPE}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: rpi5-images-${{ env.IMAGE_TYPE }}-${{ github.sha }}
+          path: |
+            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.rootfs.wic.bz2
+            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.rootfs.wic.bmap
+            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.rootfs.manifest
+            ${{ env.DEPLOY_DIR }}/pyronear-bundle-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.raucb
