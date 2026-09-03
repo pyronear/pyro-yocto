@@ -85,8 +85,7 @@ jobs:
       - name: Enable fragments and build the image and bundle
         run: |
           . ./bitbake-builds/${BUILD_ENV}/build/init-build-env
-          bitbake-config-build enable-fragment meta-pyronear/rm-work
-          bitbake-config-build enable-fragment core/yocto/sstate-mirror-cdn
+          bitbake-config-build enable-fragment meta-pyronear/rm-work core/yocto/sstate-mirror-cdn
           bitbake pyronear-image-${IMAGE_TYPE}
           bitbake pyronear-bundle-${IMAGE_TYPE}
 
