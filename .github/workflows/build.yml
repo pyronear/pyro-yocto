@@ -27,12 +27,12 @@ jobs:
       # `environment:` below: this picks what gets built, not which key
       # signs it.
       IMAGE_TYPE: ${{ inputs.image_type || 'prod' }}
-      # DEPLOY_DIR isn't composed from BUILD_ENV/MACHINE: an env: block isn't
+      # DEPLOY_DIR isn't composed from BUILD_ENV/YOCTO_MACHINE: an env: block isn't
       # a shell, so $VAR/${VAR} in a value here is never substituted (that
       # only works inside a run: step), and GitHub Actions doesn't reliably
       # support one env: entry referencing another via ${{ env.X }} either.
       BUILD_ENV: pyro-wrynose-pyro-rpi5
-      MACHINE: pyronear-rpi5
+      YOCTO_MACHINE: pyronear-rpi5
       DEPLOY_DIR: ./bitbake-builds/pyro-wrynose-pyro-rpi5/build/tmp/deploy/images/pyronear-rpi5
     # Which RAUC signing key this job gets, decided by the trigger, not by
     # IMAGE_TYPE (see above, that's a separate axis: what gets built, not
@@ -94,7 +94,7 @@ jobs:
         with:
           name: rpi5-images-${{ env.IMAGE_TYPE }}-${{ github.sha }}
           path: |
-            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.rootfs.wic.bz2
-            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.rootfs.wic.bmap
-            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.rootfs.manifest
-            ${{ env.DEPLOY_DIR }}/pyronear-bundle-${{ env.IMAGE_TYPE }}-${{ env.MACHINE }}.raucb
+            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.YOCTO_MACHINE }}.rootfs.wic.bz2
+            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.YOCTO_MACHINE }}.rootfs.wic.bmap
+            ${{ env.DEPLOY_DIR }}/pyronear-image-${{ env.IMAGE_TYPE }}-${{ env.YOCTO_MACHINE }}.rootfs.manifest
+            ${{ env.DEPLOY_DIR }}/pyronear-bundle-${{ env.IMAGE_TYPE }}-${{ env.YOCTO_MACHINE }}.raucb
