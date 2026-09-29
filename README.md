@@ -239,61 +239,42 @@ The target ships with two possible Ethernet configurations:
 
 This section explains how to provision the Raspberry Pi 5 with Ansible. It allows you to provide the essential files for setting up the Pyronear solution (Docker images: **pyro-engine** and **pyro-camera-api**).
 
-Then configure these two repo folders using their respective documentation :
+### 🤖 Ansible Setup
 
-* [pi-manager-template](https://github.com/pyronear/pi-manager-template#setup)
-* [pi-manager-example](https://github.com/pyronear/pi-manager-example#step-2--configure-the-api-url-and-credentials) (It is not necessary to perform step 1 because the Yocto image already embeds the elements)
-
-### 🤖 Ansible
-
-Once the environment is configured, we need to install all the essential elements for the operation of Pyronear's AI.
-
-* Create a folder for the Ansible configuration.
+* Create a folder for the Ansible configuration and clone the required repositories:
 
   ```bash
   mkdir Ansible-conf
   cd Ansible-conf
-  ```
-
-* Install the "pi-manager-template" repo inside this Ansible configuration folder:
-
-  ```bash
   git clone https://github.com/pyronear/pi-manager-template.git
-  ```
-
-* Also install the "pi-manager-example" repo in this Ansible configuration folder:
-
-  ```bash
   git clone https://github.com/pyronear/pi-manager-example.git
   ```
 
-* To configure Ansible, we must first place ourselves in a Python venv environment:
-  * We navigate to the same directory as the two folders we just cloned:
+* Configure these two repo folders using their respective documentation:
 
-  ```bash
-  python3 -m venv venv
-  source venv/bin/activate
-  ```
+  * [pi-manager-template](https://github.com/pyronear/pi-manager-template#setup)
+  * [pi-manager-example](https://github.com/pyronear/pi-manager-example#step-2--configure-the-api-url-and-credentials) *(It is not necessary to perform step 1 because the Yocto image already embeds the elements)*
+
+> **Warning:** On a Yocto device, **never** run `setup_pi.sh` or `init-one-engine`. These scripts use `apt` and target Raspberry Pi OS, whereas the Yocto image already embeds all necessary system components.
 
 ## ▶️ Provisioning
 
-We will now launch the Ansible configured previously.
+We will now launch the Ansible configuration.
 
-* Verify that we are in the Python virtual environment:
-
-* Go to the "pi-manager-template" folder
+* Go to the "pi-manager-template" folder:
 
   ```bash
   cd pi-manager-template
   ```
 
-* Launch the following command to set up docker:
+* Launch the Ansible container:
 
   ```bash
   make ansible-up
   ```
+  * Note: `make ansible-up` requires a `.env` file configured first in `pi-manager-template`, as described in its repository README.
 
-* Deploy Ansible on the Raspberry Pi(s) with:
+* Inside the Ansible container shell, deploy the Pyronear solution on the Raspberry Pi(s) with:
 
   ```bash
   make deploy-all-engines
