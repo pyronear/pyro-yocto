@@ -1,0 +1,13 @@
+[Unit]
+Description=Pyronear Image Qualification Service
+After=multi-user.target docker.service NetworkManager.service
+OnFailure=pyronear-validation-failed.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pyronear-image-check.sh
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
