@@ -190,6 +190,8 @@ Start the compilation of the `pyronear-image` custom image:
 
 **Now you can insert the micro-sd card into your Raspberry Pi 5 and turn it on.**
 
+* On first boot, the `/data` partition automatically expands to occupy the SD card. **Do NOT power off during this first boot.** Check completion with: `df -h /data`.
+
 **If you used prod mode during image creation, you will need to log in with the "pi" user. Information about the default password and how to change it is available in the [Pi user login and password](#️-pi-user-login-and-password) section.**
 
 **You can connect to the Raspberry Pi 5 via SSH or via the UART to finish configuring the system. To do this, please follow the steps in the [Debug connection](#-debug-connection) section.**
@@ -312,7 +314,9 @@ Once provisioning is complete, Ansible has installed all the configuration on th
 
 ## 🔄 OS Update
 
-The system uses a symmetric A/B rootfs scheme managed by RAUC: an update is installed on the currently inactive slot while the other one keeps running, then the device boots on the newly updated slot, which makes rollback straightforward if something goes wrong.
+The system uses a symmetric A/B rootfs layout managed by RAUC, consisting of two rootfs slots (`rootfs.0` / Slot A and `rootfs.1` / Slot B) and a persistent `/data` partition for user state, Docker images, and logs.
+
+Updates are installed on the inactive slot while the active slot runs. Upon reboot, U-Boot switches to the updated slot. If the new slot fails to boot, U-Boot automatically falls back to the previous working slot after 3 failed attempts (`BOOT_A_LEFT` / `BOOT_B_LEFT`).
 
 ### 🚀 System Update
 
@@ -444,6 +448,16 @@ For the update process using Ansible, you will need the previously presented git
   make update-os
   ```
 
+### 🛡️ Boot verification (`rauc-mark-good.service`)
+
+`boot.cmd.in` decrements the boot counter (`BOOT_A_LEFT` / `BOOT_B_LEFT`) on each boot. Once Linux boots, `rauc-mark-good.service` resets it back to 3 (`rauc status mark-good`). If this service fails, the station changes slots every 3 reboots and loops.
+
+Verify boot status and counters (recheck after an OTA update or rollback):
+
+* `systemctl status rauc-mark-good.service` (`active, result: success`)
+* `rauc status` (`booted from rootfs.0 (A)`, no slot marked bad)
+* `fw_printenv` (`BOOT_ORDER=A B`, `BOOT_A_LEFT=3`, `BOOT_B_LEFT=3`)
+
 ## 🔧 Advanced configuration
 
 ### ⚙️ Pi user login and password
@@ -509,15 +523,12 @@ In the machine configuration file "```pyronear-rpi5.conf```", you can choose the
 
 ## ⚠️ RAUC note
 
-If an update turns out to be faulty, you can roll back to the previous slot:
+If an update turns out to be faulty, roll back to the previous slot:
 
 ```bash
-# You must replace "X" by the number of the targeted slot.
+# Replace X with targeted slot (0 or 1)
 rauc status mark-active rootfs.X
-```
-
-It is then recommended to restart the Raspberry Pi 5 in order to boot on the previous image.
-
-```bash
 reboot
 ```
+
+After rebooting, recheck boot status and counters with `systemctl status rauc-mark-good.service`, `rauc status`, and `fw_printenv`.
