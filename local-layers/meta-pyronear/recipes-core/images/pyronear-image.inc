@@ -53,6 +53,7 @@ IMAGE_INSTALL += " \
 # Pyro-setup
 IMAGE_INSTALL += " \
     pyro-setup \
+    pyronear-validation \
 "
 
 # Update
