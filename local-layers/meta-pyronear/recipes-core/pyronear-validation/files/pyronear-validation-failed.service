@@ -1,0 +1,6 @@
+[Unit]
+Description=Pyronear Validation Failure Handler
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo "CRITICAL: Yocto Image Qualification Failed! Check /data/validation.log" | wall'
